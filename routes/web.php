@@ -57,4 +57,7 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+Route::get('/auth/{provider}/redirect', [\App\Http\Controllers\Auth\SocialiteController::class, 'redirect'])->name('socialite.redirect');
+Route::get('/auth/{provider}/callback', [\App\Http\Controllers\Auth\SocialiteController::class, 'callback'])->name('socialite.callback');
+
 require __DIR__.'/auth.php';
