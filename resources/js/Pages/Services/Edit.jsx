@@ -2,14 +2,18 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 
 export default function Edit({ auth, service }) {
-    const { data, setData, put, processing, errors } = useForm({
-        name: service.name || '', description: service.description || '', 
-        price: service.price || '0', duration: service.duration || '', profit_margin: service.profit_margin || ''
+    const { data, setData, post, processing, errors } = useForm({
+        _method: 'put',
+        name: service.name || '', 
+        description: service.description || '', 
+        price: service.price || '0', 
+        duration: service.duration ? service.duration.substring(0, 5) : '', 
+        profit_margin: service.profit_margin || ''
     });
 
     const submit = (e) => {
         e.preventDefault();
-        put(route('services.update', service.id));
+        post(route('services.update', service.id));
     };
 
     return (
