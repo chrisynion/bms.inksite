@@ -48,7 +48,7 @@ export default function Edit({ auth, order, customers, employees, services }) {
         if (field === 'service_id' && value) {
             const service = services.find(s => s.id == value);
             if (service) {
-                newItems[index].unit_price = service.base_price;
+                newItems[index].unit_price = service.price;
                 newItems[index].description = newItems[index].description || service.name;
             }
         }
@@ -149,20 +149,26 @@ export default function Edit({ auth, order, customers, employees, services }) {
                                 {data.items.map((item, index) => (
                                     <div key={index} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                         <div className="grid grid-cols-12 gap-4 items-end mb-4">
-                                            <div className="col-span-12 md:col-span-5">
+                                            <div className="col-span-12 md:col-span-4">
                                                 <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Service</label>
                                                 <select value={item.service_id || ''} onChange={e => updateItem(index, 'service_id', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm">
                                                     <option value="">-- Custom Item --</option>
-                                                    {services.map(s => <option key={s.id} value={s.id}>{s.name} (₱{parseFloat(s.base_price).toFixed(2)})</option>)}
+                                                    {services.map(s => <option key={s.id} value={s.id}>{s.name} (₱{parseFloat(s.price || 0).toFixed(2)})</option>)}
                                                 </select>
                                             </div>
-                                            <div className="col-span-6 md:col-span-3">
+                                            <div className="col-span-4 md:col-span-2">
                                                 <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Qty *</label>
                                                 <input type="number" step="0.1" min="0.1" value={item.quantity} onChange={e => updateItem(index, 'quantity', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
                                             </div>
-                                            <div className="col-span-6 md:col-span-3">
-                                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Unit Price *</label>
+                                            <div className="col-span-4 md:col-span-2">
+                                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Price *</label>
                                                 <input type="number" step="0.01" min="0" value={item.unit_price} onChange={e => updateItem(index, 'unit_price', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
+                                            </div>
+                                            <div className="col-span-4 md:col-span-3">
+                                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Service Total</label>
+                                                <div className="block w-full py-2 px-3 bg-gray-50 rounded-md border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm font-semibold">
+                                                    ₱{(parseFloat(item.quantity) * parseFloat(item.unit_price) || 0).toFixed(2)}
+                                                </div>
                                             </div>
                                             <div className="col-span-12 md:col-span-1 flex justify-end">
                                                 {data.items.length > 1 && (
