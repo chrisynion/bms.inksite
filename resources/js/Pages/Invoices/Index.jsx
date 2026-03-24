@@ -50,7 +50,7 @@ export default function Index({ auth, invoices }) {
                                                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                                                         <Link href={route('orders.edit', inv.order_id)} className="hover:underline">{inv.order?.order_number}</Link>
                                                     </div>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{inv.order?.customer?.first_name} {inv.order?.customer?.last_name}</div>
+                                                     <div className="text-xs text-gray-500 dark:text-gray-400">{inv.order?.customer?.name}</div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                     {new Date(inv.issue_date).toLocaleDateString()}

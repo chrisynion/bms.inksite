@@ -57,7 +57,7 @@ export default function Index({ auth, orders }) {
                                                     <Link href={route('orders.edit', item.id)}>{item.order_number}</Link>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">{item.customer?.first_name} {item.customer?.last_name}</div>
+                                                     <div className="text-sm font-medium text-gray-900 dark:text-white">{item.customer?.name}</div>
                                                     <div className="text-xs text-gray-500 dark:text-gray-400">{item.customer?.company_name}</div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">

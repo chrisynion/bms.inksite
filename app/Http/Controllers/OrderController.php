@@ -21,8 +21,8 @@ class OrderController extends Controller
     public function create()
     {
         return Inertia::render('Orders/Create', [
-            'customers' => Customer::orderBy('first_name')->get(),
-            'employees' => Employee::orderBy('first_name')->get(),
+            'customers' => Customer::orderBy('name')->get(),
+            'employees' => Employee::orderBy('name')->get(),
             'services' => \App\Models\Service::all(),
         ]);
     }
@@ -74,8 +74,8 @@ class OrderController extends Controller
     {
         return Inertia::render('Orders/Edit', [
             'order' => $order->load(['items', 'invoice']),
-            'customers' => Customer::orderBy('first_name')->get(),
-            'employees' => Employee::orderBy('first_name')->get(),
+            'customers' => Customer::orderBy('name')->get(),
+            'employees' => Employee::orderBy('name')->get(),
             'services' => \App\Models\Service::all(),
         ]);
     }

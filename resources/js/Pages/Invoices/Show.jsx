@@ -63,7 +63,7 @@ export default function Show({ auth, invoice }) {
                     <div className="flex justify-between mt-8 mb-8">
                         <div>
                             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Billed To</h3>
-                            <p className="font-bold text-gray-900 dark:text-white">{customer.first_name} {customer.last_name}</p>
+                            <p className="font-bold text-gray-900 dark:text-white">{customer.name}</p>
                             <p className="text-sm text-gray-600 dark:text-gray-400">{customer.company_name}</p>
                             <p className="text-sm text-gray-600 dark:text-gray-400">{customer.email}</p>
                             <p className="text-sm text-gray-600 dark:text-gray-400">{customer.phone}</p>
