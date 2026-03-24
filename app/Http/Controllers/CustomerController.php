@@ -31,7 +31,12 @@ class CustomerController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        Customer::create($validated);
+        $customer = Customer::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json($customer);
+        }
+
         return redirect()->route('customers.index')->with('success', 'Customer added successfully.');
     }
 

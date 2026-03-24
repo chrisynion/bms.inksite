@@ -1,6 +1,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { router } from '@inertiajs/react';
+import axios from 'axios';
 
 export default function Create({ auth, customers, employees, services }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -13,6 +15,37 @@ export default function Create({ auth, customers, employees, services }) {
         order_notes: '',
         items: [{ service_id: '', description: '', quantity: 1, unit_price: 0 }]
     });
+
+    const [showQuickCustomer, setShowQuickCustomer] = useState(false);
+    const [quickCust, setQuickCust] = useState({ name: '', phone: '' });
+    const [quickErrors, setQuickErrors] = useState({});
+    const [savingCust, setSavingCust] = useState(false);
+
+    const handleQuickCustomer = async (e) => {
+        e.preventDefault();
+        setSavingCust(true);
+        setQuickErrors({});
+        try {
+            const response = await axios.post(route('customers.store'), quickCust);
+            const newCust = response.data;
+
+            // After successful creation, we need to refresh the customers list.
+            router.reload({ 
+                only: ['customers'],
+                onSuccess: () => {
+                    setData('customer_id', newCust.id);
+                    setSavingCust(false);
+                    setShowQuickCustomer(false);
+                    setQuickCust({ name: '', phone: '' });
+                }
+            });
+        } catch (err) {
+            setSavingCust(false);
+            if (err.response?.data?.errors) {
+                setQuickErrors(err.response.data.errors);
+            }
+        }
+    };
 
     const calculateTotal = (items) => {
         return items.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0), 0).toFixed(2);
@@ -63,10 +96,13 @@ export default function Create({ auth, customers, employees, services }) {
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 border-b pb-2 dark:border-gray-700">Order Details</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer *</label>
+                                    <div className="flex justify-between items-center">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer *</label>
+                                        <button type="button" onClick={() => setShowQuickCustomer(true)} className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium">+ Quick Add</button>
+                                    </div>
                                     <select value={data.customer_id} onChange={e => setData('customer_id', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" required>
                                         <option value="">-- Select Customer --</option>
-                                        {customers.map(c => <option key={c.id} value={c.id}>{c.first_name} {c.last_name} {c.company_name ? `(${c.company_name})` : ''}</option>)}
+                                        {customers.map(c => <option key={c.id} value={c.id}>{c.name} {c.company_name ? `(${c.company_name})` : ''}</option>)}
                                     </select>
                                     {errors.customer_id && <div className="text-red-500 mt-1 text-sm">{errors.customer_id}</div>}
                                 </div>
@@ -74,7 +110,7 @@ export default function Create({ auth, customers, employees, services }) {
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Assigned To (Employee)</label>
                                     <select value={data.assigned_to} onChange={e => setData('assigned_to', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300">
                                         <option value="">-- Unassigned --</option>
-                                        {employees.map(e => <option key={e.id} value={e.id}>{e.first_name} {e.last_name}</option>)}
+                                        {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                                     </select>
                                     {errors.assigned_to && <div className="text-red-500 mt-1 text-sm">{errors.assigned_to}</div>}
                                 </div>
@@ -170,6 +206,33 @@ export default function Create({ auth, customers, employees, services }) {
                     </form>
                 </div>
             </div>
+
+            {/* Quick Customer Modal */}
+            {showQuickCustomer && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 animate-fade-in">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Quick Add Customer</h3>
+                        <form onSubmit={handleQuickCustomer} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name *</label>
+                                <input type="text" value={quickCust.name} onChange={e => setQuickCust({...quickCust, name: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 shadow-sm" required autoFocus />
+                                {quickErrors.name && <div className="text-red-500 text-xs mt-1">{quickErrors.name[0]}</div>}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number *</label>
+                                <input type="text" value={quickCust.phone} onChange={e => setQuickCust({...quickCust, phone: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 shadow-sm" required />
+                                {quickErrors.phone && <div className="text-red-500 text-xs mt-1">{quickErrors.phone[0]}</div>}
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button type="button" onClick={() => setShowQuickCustomer(false)} className="px-4 py-2 text-gray-600 dark:text-gray-400 font-medium">Cancel</button>
+                                <button type="submit" disabled={savingCust} className="px-4 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 transition disabled:opacity-50">
+                                    {savingCust ? 'Adding...' : 'Save & Select'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }
