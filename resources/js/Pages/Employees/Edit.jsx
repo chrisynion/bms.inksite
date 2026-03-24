@@ -71,7 +71,7 @@ export default function Edit({ auth, employee }) {
                                     <input type="date" value={data.hire_date} onChange={e => setData('hire_date', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
                                 </div>
                                 <div className="col-span-2 sm:col-span-1">
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hourly Rate ($)</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hourly Rate (₱)</label>
                                     <input type="number" step="0.01" value={data.hourly_rate} onChange={e => setData('hourly_rate', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
                                     {errors.hourly_rate && <div className="text-red-500 mt-1 text-sm">{errors.hourly_rate}</div>}
                                 </div>
@@ -137,8 +137,8 @@ export default function Edit({ auth, employee }) {
                                                     <tr key={ot.id}>
                                                         <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{new Date(ot.date).toLocaleDateString()}</td>
                                                         <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right font-medium">{ot.hours}</td>
-                                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-right">${ot.rate_applied}/hr</td>
-                                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-green-600 dark:text-green-400 text-right font-bold">${ot.total_pay}</td>
+                                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-right">₱{ot.rate_applied}/hr</td>
+                                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-green-600 dark:text-green-400 text-right font-bold">₱{ot.total_pay}</td>
                                                         <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
                                                             <button onClick={() => deleteOvertime(ot.id)} className="text-red-600 hover:text-red-900 dark:hover:text-red-400">&times;</button>
                                                         </td>
@@ -151,7 +151,7 @@ export default function Edit({ auth, employee }) {
                                                     </td>
                                                     <td></td>
                                                     <td className="px-3 py-3 text-sm font-bold text-green-600 dark:text-green-400 text-right">
-                                                        ${employee.overtimes.reduce((sum, ot) => sum + parseFloat(ot.total_pay), 0).toFixed(2)}
+                                                        ₱{employee.overtimes.reduce((sum, ot) => sum + parseFloat(ot.total_pay), 0).toFixed(2)}
                                                     </td>
                                                     <td></td>
                                                 </tr>

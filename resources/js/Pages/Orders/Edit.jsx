@@ -112,7 +112,7 @@ export default function Edit({ auth, order, customers, employees, services }) {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Calculated Total</label>
                                     <div className="mt-1 block w-full py-2 px-3 bg-gray-100 rounded-md border border-transparent dark:bg-gray-700 dark:text-gray-300 text-lg font-bold">
-                                        ${data.order_total}
+                                        ₱{data.order_total}
                                     </div>
                                     <input type="hidden" value={data.order_total} />
                                 </div>
@@ -141,7 +141,7 @@ export default function Edit({ auth, order, customers, employees, services }) {
                                             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Service</label>
                                             <select value={item.service_id || ''} onChange={e => updateItem(index, 'service_id', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm">
                                                 <option value="">-- Custom Item --</option>
-                                                {services.map(s => <option key={s.id} value={s.id}>{s.name} (${s.base_price})</option>)}
+                                                {services.map(s => <option key={s.id} value={s.id}>{s.name} (₱{s.base_price})</option>)}
                                             </select>
                                         </div>
                                         <div className="col-span-12 md:col-span-4">
@@ -170,7 +170,7 @@ export default function Edit({ auth, order, customers, employees, services }) {
 
                         {/* Submit */}
                         <div className="flex justify-end gap-4 mt-6 items-center">
-                            <span className="text-xl font-bold dark:text-white mr-6">Grand Total: ${data.order_total}</span>
+                            <span className="text-xl font-bold dark:text-white mr-6">Grand Total: ₱{data.order_total}</span>
                             <Link href={route('orders.index')} className="px-4 py-2 border rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Cancel</Link>
                             <button type="submit" disabled={processing} className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition font-medium text-lg disabled:opacity-50">Save Changes</button>
                         </div>

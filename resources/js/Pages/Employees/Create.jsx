@@ -41,8 +41,8 @@ export default function Create({ auth }) {
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hire Date</label>
                                     <input type="date" value={data.hire_date} onChange={e => setData('hire_date', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
                                 </div>
-                                <div className="col-span-2 sm:col-span-1">
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hourly Rate ($)</label>
+                                 <div className="col-span-2 sm:col-span-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hourly Rate (₱)</label>
                                     <input type="number" step="0.01" value={data.hourly_rate} onChange={e => setData('hourly_rate', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
                                     {errors.hourly_rate && <div className="text-red-500 mt-1 text-sm">{errors.hourly_rate}</div>}
                                 </div>

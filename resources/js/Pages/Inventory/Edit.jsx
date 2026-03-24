@@ -34,8 +34,8 @@ export default function Edit({ auth, item }) {
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Form (Sheet, Roll, etc)</label>
                                     <input type="text" value={data.form} onChange={e => setData('form', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Price *</label>
+                                 <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Price (₱) *</label>
                                     <input type="number" step="0.01" value={data.price} onChange={e => setData('price', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" required />
                                     {errors.price && <div className="text-red-500 mt-1 text-sm">{errors.price}</div>}
                                 </div>

@@ -40,8 +40,8 @@ export default function Create({ auth }) {
                                         <option value="retired">Retired / Down</option>
                                     </select>
                                 </div>
-                                <div className="col-span-2 sm:col-span-1">
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Estimated Hourly Cost ($)</label>
+                                 <div className="col-span-2 sm:col-span-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Estimated Hourly Cost (₱)</label>
                                     <input type="number" step="0.01" value={data.hourly_cost} onChange={e => setData('hourly_cost', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
                                 </div>
 

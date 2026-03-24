@@ -74,7 +74,7 @@ export default function Index({ auth, orders }) {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white">
-                                                    ${parseFloat(item.order_total).toFixed(2)}
+                                                    ₱{parseFloat(item.order_total).toFixed(2)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right flex justify-end gap-3">
                                                     <Link href={route('orders.edit', item.id)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 transition">Edit / View</Link>

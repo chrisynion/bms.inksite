@@ -22,7 +22,7 @@ export default function Index({ auth, inventory }) {
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Price</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Price (₱)</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Stock</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                                     </tr>
@@ -32,7 +32,7 @@ export default function Index({ auth, inventory }) {
                                         <tr key={item.id}>
                                             <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">{item.type || '-'}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">${item.price}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">₱{parseFloat(item.price).toFixed(2)}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={`px-2 py-1 rounded-full text-xs ${item.stock > 10 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
                                                     {item.stock}

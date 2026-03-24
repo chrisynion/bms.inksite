@@ -29,7 +29,7 @@ export default function Create({ auth }) {
                             </div>
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Base Price *</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Base Price (₱) *</label>
                                     <input type="number" step="0.01" value={data.price} onChange={e => setData('price', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" required />
                                     {errors.price && <div className="text-red-500 mt-1 text-sm">{errors.price}</div>}
                                 </div>

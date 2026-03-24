@@ -90,8 +90,8 @@ export default function Show({ auth, invoice }) {
                                 <tr key={item.id}>
                                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">{item.description}</td>
                                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 text-right">{item.quantity}</td>
-                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 text-right">${parseFloat(item.unit_price).toFixed(2)}</td>
-                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 text-right">${parseFloat(item.total_price).toFixed(2)}</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 text-right">₱{parseFloat(item.unit_price).toFixed(2)}</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 text-right">₱{parseFloat(item.total_price).toFixed(2)}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -102,27 +102,27 @@ export default function Show({ auth, invoice }) {
                         <div className="w-64 space-y-2">
                             <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                                 <span>Subtotal:</span>
-                                <span>${parseFloat(invoice.subtotal).toFixed(2)}</span>
+                                <span>₱{parseFloat(invoice.subtotal).toFixed(2)}</span>
                             </div>
                             {invoice.tax_amount > 0 && <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                                 <span>Tax ({invoice.tax_rate}%):</span>
-                                <span>${parseFloat(invoice.tax_amount).toFixed(2)}</span>
+                                <span>₱{parseFloat(invoice.tax_amount).toFixed(2)}</span>
                             </div>}
                             {invoice.discount_amount > 0 && <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                                 <span>Discount:</span>
-                                <span>-${parseFloat(invoice.discount_amount).toFixed(2)}</span>
+                                <span>-₱{parseFloat(invoice.discount_amount).toFixed(2)}</span>
                             </div>}
                             <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-white pt-2 border-t dark:border-gray-700">
                                 <span>Total:</span>
-                                <span>${parseFloat(invoice.total_amount).toFixed(2)}</span>
+                                <span>₱{parseFloat(invoice.total_amount).toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-sm text-green-600 dark:text-green-400 pt-1">
                                 <span>Paid:</span>
-                                <span>-${totalPaid.toFixed(2)}</span>
+                                <span>-₱{totalPaid.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-lg font-bold text-red-600 dark:text-red-400 pt-2 border-t dark:border-gray-700">
                                 <span>Amount Due:</span>
-                                <span>${amountDue > 0 ? amountDue.toFixed(2) : '0.00'}</span>
+                                <span>₱{amountDue > 0 ? amountDue.toFixed(2) : '0.00'}</span>
                             </div>
                         </div>
                     </div>
@@ -146,7 +146,7 @@ export default function Show({ auth, invoice }) {
                                 {payments.map(p => (
                                     <div key={p.id} className="text-sm border p-3 rounded-lg dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
                                         <div className="flex justify-between font-bold dark:text-white">
-                                            <span>${parseFloat(p.amount).toFixed(2)}</span>
+                                            <span>₱{parseFloat(p.amount).toFixed(2)}</span>
                                             <span>{new Date(p.payment_date).toLocaleDateString()}</span>
                                         </div>
                                         <div className="text-gray-500 text-xs mt-1 dark:text-gray-400 flex justify-between items-center">
@@ -176,7 +176,7 @@ export default function Show({ auth, invoice }) {
                             <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-4 text-green-600 dark:text-green-400">New Payment</h3>
                             <form onSubmit={submitPayment} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount ($)</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount (₱)</label>
                                     <input type="number" step="0.01" max={amountDue} value={data.amount} onChange={e => setData('amount', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm dark:bg-gray-900 dark:border-gray-600 dark:text-white" required />
                                     {errors.amount && <div className="text-red-500 text-xs mt-1">{errors.amount}</div>}
                                 </div>

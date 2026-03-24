@@ -21,7 +21,7 @@ export default function Index({ auth, services }) {
                                 <thead>
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Price (Base)</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Price (₱)</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Margin (%)</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Duration</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
@@ -31,7 +31,7 @@ export default function Index({ auth, services }) {
                                     {services.map((item) => (
                                         <tr key={item.id}>
                                             <td className="px-6 py-4 whitespace-nowrap font-medium">{item.name}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">${item.price}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">₱{parseFloat(item.price).toFixed(2)}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">{item.profit_margin ? `${item.profit_margin}%` : '-'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">{item.duration || '-'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-4">

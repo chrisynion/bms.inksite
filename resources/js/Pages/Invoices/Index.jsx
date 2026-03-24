@@ -59,7 +59,7 @@ export default function Index({ auth, invoices }) {
                                                     {inv.due_date ? new Date(inv.due_date).toLocaleDateString() : '-'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white">
-                                                    ${parseFloat(inv.total_amount).toFixed(2)}
+                                                    ₱{parseFloat(inv.total_amount).toFixed(2)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                     <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full shadow-sm ${getStatusStyle(inv.status)}`}>
