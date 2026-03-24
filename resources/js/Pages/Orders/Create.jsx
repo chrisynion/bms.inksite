@@ -4,6 +4,17 @@ import { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
 
+const PRESET_SIZES = [
+    { name: 'Custom', w: '', h: '' },
+    { name: 'A4', w: 8.27, h: 11.69 },
+    { name: 'A3', w: 11.69, h: 16.54 },
+    { name: 'Letter', w: 8.5, h: 11 },
+    { name: 'Legal', w: 8.5, h: 14 },
+    { name: '4x6 in', w: 4, h: 6 },
+    { name: '5x7 in', w: 5, h: 7 },
+    { name: '8x10 in', w: 8, h: 10 },
+];
+
 export default function Create({ auth, customers, employees, services }) {
     const { data, setData, post, processing, errors } = useForm({
         customer_id: '',
@@ -13,7 +24,7 @@ export default function Create({ auth, customers, employees, services }) {
         order_total: 0,
         payment_status: 'unpaid',
         order_notes: '',
-        items: [{ service_id: '', description: '', quantity: 1, unit_price: 0 }]
+        items: [{ service_id: '', description: '', quantity: 1, unit_price: 0, width: '', height: '' }]
     });
 
     const [showQuickCustomer, setShowQuickCustomer] = useState(false);
@@ -52,7 +63,7 @@ export default function Create({ auth, customers, employees, services }) {
     };
 
     const addItem = () => {
-        setData('items', [...data.items, { service_id: '', description: '', quantity: 1, unit_price: 0 }]);
+        setData('items', [...data.items, { service_id: '', description: '', quantity: 1, unit_price: 0, width: '', height: '' }]);
     };
 
     const removeItem = (index) => {
@@ -163,38 +174,70 @@ export default function Create({ auth, customers, employees, services }) {
                             
                             {errors.items && <div className="text-red-500 mb-4">{errors.items}</div>}
 
-                            <div className="space-y-4">
-                                {data.items.map((item, index) => (
-                                    <div key={index} className="grid grid-cols-12 gap-4 items-end bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                                        <div className="col-span-12 md:col-span-3">
-                                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Service</label>
-                                            <select value={item.service_id} onChange={e => updateItem(index, 'service_id', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm">
-                                                <option value="">-- Custom Item --</option>
-                                                {services.map(s => <option key={s.id} value={s.id}>{s.name} (₱{s.base_price})</option>)}
-                                            </select>
+                                <div className="space-y-4">
+                                    {data.items.map((item, index) => (
+                                        <div key={index} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <div className="grid grid-cols-12 gap-4 items-end mb-4">
+                                                <div className="col-span-12 md:col-span-3">
+                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Service</label>
+                                                    <select value={item.service_id} onChange={e => updateItem(index, 'service_id', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm">
+                                                        <option value="">-- Custom Item --</option>
+                                                        {services.map(s => <option key={s.id} value={s.id}>{s.name} (₱{parseFloat(s.base_price).toFixed(2)})</option>)}
+                                                    </select>
+                                                </div>
+                                                <div className="col-span-12 md:col-span-4">
+                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Description *</label>
+                                                    <input type="text" value={item.description} onChange={e => updateItem(index, 'description', e.target.value)} placeholder="e.g. 500x Business Cards Glossy" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
+                                                </div>
+                                                <div className="col-span-6 md:col-span-2">
+                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Qty *</label>
+                                                    <input type="number" step="0.1" min="0.1" value={item.quantity} onChange={e => updateItem(index, 'quantity', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
+                                                </div>
+                                                <div className="col-span-6 md:col-span-2">
+                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Unit Price *</label>
+                                                    <input type="number" step="0.01" min="0" value={item.unit_price} onChange={e => updateItem(index, 'unit_price', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
+                                                </div>
+                                                <div className="col-span-12 md:col-span-1 flex justify-end">
+                                                    {data.items.length > 1 && (
+                                                        <button type="button" onClick={() => removeItem(index)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 p-2 rounded transition" title="Remove Item">
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Size / Dimensions Section */}
+                                            <div className="grid grid-cols-12 gap-4 border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                                                <div className="col-span-6 md:col-span-4">
+                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Common Sizes</label>
+                                                    <select 
+                                                        onChange={(e) => {
+                                                            const preset = PRESET_SIZES.find(p => p.name === e.target.value);
+                                                            if (preset) {
+                                                                updateItem(index, 'width', preset.w);
+                                                                updateItem(index, 'height', preset.h);
+                                                            }
+                                                        }}
+                                                        className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs"
+                                                    >
+                                                        {PRESET_SIZES.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div className="col-span-3 md:col-span-2">
+                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Width</label>
+                                                    <input type="number" step="0.01" value={item.width} onChange={e => updateItem(index, 'width', e.target.value)} placeholder="0.00" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs" />
+                                                </div>
+                                                <div className="col-span-3 md:col-span-2">
+                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Height</label>
+                                                    <input type="number" step="0.01" value={item.height} onChange={e => updateItem(index, 'height', e.target.value)} placeholder="0.00" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs" />
+                                                </div>
+                                                <div className="col-span-12 md:col-span-4 self-center text-xs text-gray-400 italic">
+                                                    Dimensions for printing (inches recommended)
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="col-span-12 md:col-span-4">
-                                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Description *</label>
-                                            <input type="text" value={item.description} onChange={e => updateItem(index, 'description', e.target.value)} placeholder="e.g. 500x Business Cards Glossy" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
-                                        </div>
-                                        <div className="col-span-6 md:col-span-2">
-                                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Qty *</label>
-                                            <input type="number" step="0.1" min="0.1" value={item.quantity} onChange={e => updateItem(index, 'quantity', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
-                                        </div>
-                                        <div className="col-span-6 md:col-span-2">
-                                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Unit Price *</label>
-                                            <input type="number" step="0.01" min="0" value={item.unit_price} onChange={e => updateItem(index, 'unit_price', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
-                                        </div>
-                                        <div className="col-span-12 md:col-span-1 flex justify-end">
-                                            {data.items.length > 1 && (
-                                                <button type="button" onClick={() => removeItem(index)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 p-2 rounded transition" title="Remove Item">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
                         </div>
 
                         {/* Submit */}

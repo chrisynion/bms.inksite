@@ -88,7 +88,14 @@ export default function Show({ auth, invoice }) {
                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                             {order.items.map(item => (
                                 <tr key={item.id}>
-                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">{item.description}</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">
+                                        <div className="font-medium">{item.description}</div>
+                                        {item.width > 0 && item.height > 0 && (
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-light">
+                                                Size: {parseFloat(item.width)}" x {parseFloat(item.height)}"
+                                            </div>
+                                        )}
+                                    </td>
                                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 text-right">{item.quantity}</td>
                                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 text-right">₱{parseFloat(item.unit_price).toFixed(2)}</td>
                                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 text-right">₱{parseFloat(item.total_price).toFixed(2)}</td>

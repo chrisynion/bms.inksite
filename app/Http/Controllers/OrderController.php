@@ -42,6 +42,8 @@ class OrderController extends Controller
             'items.*.description' => 'required|string|max:255',
             'items.*.quantity' => 'required|numeric|min:0.1',
             'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.width' => 'nullable|numeric|min:0',
+            'items.*.height' => 'nullable|numeric|min:0',
         ]);
 
         $validated['order_number'] = 'ORD-' . strtoupper(Str::random(8));
@@ -62,6 +64,8 @@ class OrderController extends Controller
                 'service_id' => $item['service_id'] ?? null,
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],
+                'width' => $item['width'] ?? null,
+                'height' => $item['height'] ?? null,
                 'unit_price' => $item['unit_price'],
                 'total_price' => $item['quantity'] * $item['unit_price']
             ]);
@@ -96,6 +100,8 @@ class OrderController extends Controller
             'items.*.description' => 'required|string|max:255',
             'items.*.quantity' => 'required|numeric|min:0.1',
             'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.width' => 'nullable|numeric|min:0',
+            'items.*.height' => 'nullable|numeric|min:0',
         ]);
 
         $order->update([
@@ -119,6 +125,8 @@ class OrderController extends Controller
                     'service_id' => $item['service_id'] ?? null,
                     'description' => $item['description'],
                     'quantity' => $item['quantity'],
+                    'width' => $item['width'] ?? null,
+                    'height' => $item['height'] ?? null,
                     'unit_price' => $item['unit_price'],
                     'total_price' => $item['quantity'] * $item['unit_price']
                 ]
