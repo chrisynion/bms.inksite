@@ -178,22 +178,18 @@ export default function Create({ auth, customers, employees, services }) {
                                     {data.items.map((item, index) => (
                                         <div key={index} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                             <div className="grid grid-cols-12 gap-4 items-end mb-4">
-                                                <div className="col-span-12 md:col-span-3">
+                                                <div className="col-span-12 md:col-span-5">
                                                     <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Service</label>
                                                     <select value={item.service_id} onChange={e => updateItem(index, 'service_id', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm">
                                                         <option value="">-- Custom Item --</option>
                                                         {services.map(s => <option key={s.id} value={s.id}>{s.name} (₱{parseFloat(s.base_price).toFixed(2)})</option>)}
                                                     </select>
                                                 </div>
-                                                <div className="col-span-12 md:col-span-4">
-                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Description *</label>
-                                                    <input type="text" value={item.description} onChange={e => updateItem(index, 'description', e.target.value)} placeholder="e.g. 500x Business Cards Glossy" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
-                                                </div>
-                                                <div className="col-span-6 md:col-span-2">
+                                                <div className="col-span-6 md:col-span-3">
                                                     <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Qty *</label>
                                                     <input type="number" step="0.1" min="0.1" value={item.quantity} onChange={e => updateItem(index, 'quantity', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
                                                 </div>
-                                                <div className="col-span-6 md:col-span-2">
+                                                <div className="col-span-6 md:col-span-3">
                                                     <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Unit Price *</label>
                                                     <input type="number" step="0.01" min="0" value={item.unit_price} onChange={e => updateItem(index, 'unit_price', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
                                                 </div>
@@ -206,10 +202,9 @@ export default function Create({ auth, customers, employees, services }) {
                                                 </div>
                                             </div>
                                             
-                                            {/* Size / Dimensions Section */}
                                             <div className="grid grid-cols-12 gap-4 border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
-                                                <div className="col-span-6 md:col-span-4">
-                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Common Sizes</label>
+                                                <div className="col-span-6 md:col-span-3">
+                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Preset Size</label>
                                                     <select 
                                                         onChange={(e) => {
                                                             const preset = PRESET_SIZES.find(p => p.name === e.target.value);
@@ -225,14 +220,15 @@ export default function Create({ auth, customers, employees, services }) {
                                                 </div>
                                                 <div className="col-span-3 md:col-span-2">
                                                     <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Width</label>
-                                                    <input type="number" step="0.01" value={item.width} onChange={e => updateItem(index, 'width', e.target.value)} placeholder="0.00" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs" />
+                                                    <input type="number" step="0.01" value={item.width} onChange={e => updateItem(index, 'width', e.target.value)} placeholder="0" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs" />
                                                 </div>
                                                 <div className="col-span-3 md:col-span-2">
                                                     <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Height</label>
-                                                    <input type="number" step="0.01" value={item.height} onChange={e => updateItem(index, 'height', e.target.value)} placeholder="0.00" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs" />
+                                                    <input type="number" step="0.01" value={item.height} onChange={e => updateItem(index, 'height', e.target.value)} placeholder="0" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs" />
                                                 </div>
-                                                <div className="col-span-12 md:col-span-4 self-center text-xs text-gray-400 italic">
-                                                    Dimensions for printing (inches recommended)
+                                                <div className="col-span-12 md:col-span-5">
+                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Description / Notes</label>
+                                                    <input type="text" value={item.description} onChange={e => updateItem(index, 'description', e.target.value)} placeholder="e.g. Glossy finish" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs" />
                                                 </div>
                                             </div>
                                         </div>

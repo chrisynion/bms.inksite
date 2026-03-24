@@ -39,7 +39,7 @@ class OrderController extends Controller
             'order_notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.service_id' => 'nullable|exists:services,id',
-            'items.*.description' => 'required|string|max:255',
+            'items.*.description' => 'nullable|string|max:255',
             'items.*.quantity' => 'required|numeric|min:0.1',
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.width' => 'nullable|numeric|min:0',
@@ -62,7 +62,7 @@ class OrderController extends Controller
         foreach ($validated['items'] as $item) {
             $order->items()->create([
                 'service_id' => $item['service_id'] ?? null,
-                'description' => $item['description'],
+                'description' => $item['description'] ?? '',
                 'quantity' => $item['quantity'],
                 'width' => $item['width'] ?? null,
                 'height' => $item['height'] ?? null,
@@ -97,7 +97,7 @@ class OrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.id' => 'nullable|exists:order_items,id',
             'items.*.service_id' => 'nullable|exists:services,id',
-            'items.*.description' => 'required|string|max:255',
+            'items.*.description' => 'nullable|string|max:255',
             'items.*.quantity' => 'required|numeric|min:0.1',
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.width' => 'nullable|numeric|min:0',
@@ -123,7 +123,7 @@ class OrderController extends Controller
                 ['id' => $item['id'] ?? null],
                 [
                     'service_id' => $item['service_id'] ?? null,
-                    'description' => $item['description'],
+                    'description' => $item['description'] ?? '',
                     'quantity' => $item['quantity'],
                     'width' => $item['width'] ?? null,
                     'height' => $item['height'] ?? null,
