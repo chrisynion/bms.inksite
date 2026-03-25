@@ -71,6 +71,10 @@ class OrderController extends Controller
             ]);
         }
 
+        if (in_array($order->status, ['in_progress', 'ready', 'completed'])) {
+            $order->deductInventory();
+        }
+
         return redirect()->route('orders.index')->with('success', 'Order created successfully.');
     }
 
@@ -131,6 +135,10 @@ class OrderController extends Controller
                     'total_price' => $item['quantity'] * $item['unit_price']
                 ]
             );
+        }
+
+        if (in_array($order->status, ['in_progress', 'ready', 'completed'])) {
+            $order->deductInventory();
         }
 
         return redirect()->route('orders.index')->with('success', 'Order updated successfully.');
