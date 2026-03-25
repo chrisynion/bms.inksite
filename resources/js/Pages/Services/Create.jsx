@@ -38,8 +38,39 @@ export default function Create({ auth }) {
                                     <input type="number" step="0.01" value={data.profit_margin} onChange={e => setData('profit_margin', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration (HH:MM)</label>
-                                    <input type="time" value={data.duration} onChange={e => setData('duration', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration</label>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <div className="flex-1">
+                                            <input 
+                                                type="number" 
+                                                placeholder="0"
+                                                min="0"
+                                                value={data.duration ? data.duration.split(':')[0] : '0'} 
+                                                onChange={e => {
+                                                    const mins = data.duration ? data.duration.split(':')[1] : '00';
+                                                    setData('duration', `${e.target.value.padStart(2, '0')}:${mins.padStart(2, '0')}`);
+                                                }}
+                                                className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" 
+                                            />
+                                            <span className="text-[10px] uppercase text-gray-500 font-bold ml-1">Hrs</span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <input 
+                                                type="number" 
+                                                placeholder="0"
+                                                min="0"
+                                                max="59"
+                                                value={data.duration ? parseInt(data.duration.split(':')[1]) : '0'} 
+                                                onChange={e => {
+                                                    const hrs = data.duration ? data.duration.split(':')[0] : '00';
+                                                    setData('duration', `${hrs.padStart(2, '0')}:${e.target.value.padStart(2, '0')}`);
+                                                }}
+                                                className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" 
+                                            />
+                                            <span className="text-[10px] uppercase text-gray-500 font-bold ml-1">Mins</span>
+                                        </div>
+                                    </div>
+                                    {errors.duration && <div className="text-red-500 mt-1 text-sm">{errors.duration}</div>}
                                 </div>
                             </div>
                             <div className="flex justify-end gap-4 mt-6">

@@ -33,7 +33,17 @@ export default function Index({ auth, services }) {
                                             <td className="px-6 py-4 whitespace-nowrap font-medium">{item.name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">₱{parseFloat(item.price).toFixed(2)}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">{item.profit_margin ? `${item.profit_margin}%` : '-'}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{item.duration || '-'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {item.duration ? (() => {
+                                                    const [h, m] = item.duration.split(':');
+                                                    const hrs = parseInt(h);
+                                                    const mins = parseInt(m);
+                                                    let display = '';
+                                                    if (hrs > 0) display += `${hrs}h `;
+                                                    if (mins > 0 || hrs === 0) display += `${mins}m`;
+                                                    return display.trim();
+                                                })() : '-'}
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-4">
                                                 <Link href={route('services.edit', item.id)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">Edit</Link>
                                                 <button onClick={() => { if(confirm('Delete this service?')) destroy(route('services.destroy', item.id)) }} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</button>
