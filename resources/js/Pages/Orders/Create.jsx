@@ -264,8 +264,8 @@ export default function Create({ auth, customers, employees, services }) {
                                 {quickErrors.name && <div className="text-red-500 text-xs mt-1">{quickErrors.name[0]}</div>}
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number *</label>
-                                <input type="text" value={quickCust.phone} onChange={e => setQuickCust({...quickCust, phone: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 shadow-sm" required />
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                                <input type="text" value={quickCust.phone} onChange={e => setQuickCust({...quickCust, phone: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 shadow-sm" />
                                 {quickErrors.phone && <div className="text-red-500 text-xs mt-1">{quickErrors.phone[0]}</div>}
                             </div>
                             <div className="flex justify-end gap-3 pt-4">
