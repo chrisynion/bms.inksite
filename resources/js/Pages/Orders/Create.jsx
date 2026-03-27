@@ -59,7 +59,13 @@ export default function Create({ auth, customers, employees, services }) {
     };
 
     const calculateTotal = (items) => {
-        return items.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0), 0).toFixed(2);
+        return items.reduce((sum, item) => {
+            const w = parseFloat(item.width) || 1;
+            const h = parseFloat(item.height) || 1;
+            const q = parseFloat(item.quantity) || 0;
+            const p = parseFloat(item.unit_price) || 0;
+            return sum + (w * h * q * p);
+        }, 0).toFixed(2);
     };
 
     const addItem = () => {
@@ -196,7 +202,7 @@ export default function Create({ auth, customers, employees, services }) {
                                                 <div className="col-span-4 md:col-span-3">
                                                     <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Service Total</label>
                                                     <div className="block w-full py-2 px-3 bg-gray-50 rounded-md border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm font-semibold">
-                                                        ₱{(parseFloat(item.quantity) * parseFloat(item.unit_price) || 0).toFixed(2)}
+                                                        ₱{((parseFloat(item.width) || 1) * (parseFloat(item.height) || 1) * parseFloat(item.quantity) * parseFloat(item.unit_price) || 0).toFixed(2)}
                                                     </div>
                                                 </div>
                                                 <div className="col-span-12 md:col-span-1 flex justify-end">

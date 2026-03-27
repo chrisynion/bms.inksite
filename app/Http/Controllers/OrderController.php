@@ -67,7 +67,7 @@ class OrderController extends Controller
                 'width' => $item['width'] ?? null,
                 'height' => $item['height'] ?? null,
                 'unit_price' => $item['unit_price'],
-                'total_price' => $item['quantity'] * $item['unit_price']
+                'total_price' => ($item['width'] ?? 1) * ($item['height'] ?? 1) * $item['quantity'] * $item['unit_price']
             ]);
         }
 
@@ -132,7 +132,7 @@ class OrderController extends Controller
                     'width' => $item['width'] ?? null,
                     'height' => $item['height'] ?? null,
                     'unit_price' => $item['unit_price'],
-                    'total_price' => $item['quantity'] * $item['unit_price']
+                    'total_price' => ($item['width'] ?? 1) * ($item['height'] ?? 1) * $item['quantity'] * $item['unit_price']
                 ]
             );
         }
