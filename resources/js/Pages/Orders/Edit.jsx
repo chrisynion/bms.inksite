@@ -153,7 +153,7 @@ export default function Edit({ auth, order, customers, employees, services }) {
 
                             <div className="space-y-4">
                                 {data.items.map((item, index) => (
-                                    <div key={index} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <div key={index} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-[#053a8078] transition-colors duration-300 shadow-sm hover:shadow-md">
                                         <div className="grid grid-cols-12 gap-4 items-end mb-4">
                                             <div className="col-span-12 md:col-span-4">
                                                 <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Service</label>

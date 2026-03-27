@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->boolean('inventory_deducted')->default(false)->after('payment_status');
+            if (!Schema::hasColumn('orders', 'inventory_deducted')) {
+                $table->boolean('inventory_deducted')->default(false)->after('payment_status');
+            }
         });
     }
 

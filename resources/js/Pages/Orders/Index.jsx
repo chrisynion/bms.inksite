@@ -52,7 +52,7 @@ export default function Index({ auth, orders }) {
                                         </tr>
                                     ) : (
                                         orders.map((item) => (
-                                            <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition duration-150">
+                                            <tr key={item.id} className="hover:bg-[#053a8078] transition-colors duration-200">
                                                 <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-600 dark:text-blue-400">
                                                     <Link href={route('orders.edit', item.id)}>{item.order_number}</Link>
                                                 </td>
