@@ -32,11 +32,13 @@ export default function Edit({ auth, customer }) {
                                 </div>
                                 <div className="col-span-2 sm:col-span-1">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
-                                    <input type="email" value={data.email} onChange={e => setData('email', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
+                                    <input type="email" value={data.email} onChange={e => setData('email', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
+                                    {errors.email && <div className="text-red-500 mt-1 text-sm">{errors.email}</div>}
                                 </div>
                                 <div className="col-span-2 sm:col-span-1">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
-                                    <input type="text" value={data.phone} onChange={e => setData('phone', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
+                                    <input type="text" value={data.phone} onChange={e => setData('phone', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
+                                    {errors.phone && <div className="text-red-500 mt-1 text-sm">{errors.phone}</div>}
                                 </div>
                                 <div className="col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>

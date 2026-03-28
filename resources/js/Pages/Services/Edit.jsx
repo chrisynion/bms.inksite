@@ -1,8 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import RollCalculatorModal from '@/Components/RollCalculatorModal';
 
-export default function Edit({ auth, service, inventory_items, equipment }) {
+export default function Edit({ auth, service, inventory_items, equipment, rolls }) {
+    const [showRollCalc, setShowRollCalc] = useState(false);
     const { data, setData, post, processing, errors } = useForm({
         _method: 'put',
         name: service.name || '', 
@@ -98,9 +100,26 @@ export default function Edit({ auth, service, inventory_items, equipment }) {
                                 </div>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Base Price (₱) *</label>
-                                        <input type="number" step="0.01" value={data.price} onChange={e => setData('price', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" required />
+                                        <div className="flex justify-between items-center mb-1">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Base Price (₱) *</label>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setShowRollCalc(true)}
+                                                className="text-[10px] px-2 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 rounded hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition flex items-center gap-1 font-bold uppercase"
+                                            >
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                                                Calculate Price
+                                            </button>
+                                        </div>
+                                        <input type="number" step="0.01" value={data.price} onChange={e => setData('price', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" required />
                                         {errors.price && <div className="text-red-500 mt-1 text-sm">{errors.price}</div>}
+
+                                        <RollCalculatorModal 
+                                            show={showRollCalc} 
+                                            onClose={() => setShowRollCalc(false)} 
+                                            rolls={rolls} 
+                                            onSelect={(p) => { setData('price', p); setShowRollCalc(false); }} 
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Profit Margin (%)</label>

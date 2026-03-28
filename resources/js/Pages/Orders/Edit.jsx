@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useEffect } from 'react';
+import SearchableSelect from '@/Components/SearchableSelect';
 
 const PRESET_SIZES = [
     { name: 'Custom', w: '', h: '' },
@@ -88,10 +89,16 @@ export default function Edit({ auth, order, customers, employees, services }) {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer *</label>
-                                    <select value={data.customer_id} onChange={e => setData('customer_id', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" required>
-                                        <option value="">-- Select Customer --</option>
-                                        {customers.map(c => <option key={c.id} value={c.id}>{c.name} {c.company_name ? `(${c.company_name})` : ''}</option>)}
-                                    </select>
+                                    <SearchableSelect 
+                                        options={customers.map(c => ({ 
+                                            value: c.id, 
+                                            label: `${c.name} ${c.company_name ? `(${c.company_name})` : ''}` 
+                                        }))}
+                                        value={data.customer_id}
+                                        onChange={(val) => setData('customer_id', val)}
+                                        placeholder="-- Search Customer --"
+                                        className="mt-1"
+                                    />
                                     {errors.customer_id && <div className="text-red-500 mt-1 text-sm">{errors.customer_id}</div>}
                                 </div>
                                 <div>
