@@ -20,7 +20,6 @@ class ServiceController extends Controller
         return Inertia::render('Services/Create', [
             'inventory_items' => \App\Models\InventoryItem::all(),
             'equipment' => \App\Models\Equipment::all(),
-            'rolls' => UtilityController::getRolls(),
         ]);
     }
 
@@ -81,7 +80,6 @@ class ServiceController extends Controller
             'service' => $service->load(['inventoryItems', 'equipment', 'labor']),
             'inventory_items' => \App\Models\InventoryItem::all(),
             'equipment' => \App\Models\Equipment::all(),
-            'rolls' => UtilityController::getRolls(),
         ]);
     }
 

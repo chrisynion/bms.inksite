@@ -11,4 +11,9 @@ class Customer extends Model
     protected $casts = [
         'tags' => 'array',
     ];
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

@@ -11,7 +11,7 @@ class CustomerController extends Controller
     public function index()
     {
         return Inertia::render('Customers/Index', [
-            'customers' => Customer::latest()->get()
+            'customers' => Customer::withCount('orders')->latest()->get()
         ]);
     }
 
@@ -72,6 +72,10 @@ class CustomerController extends Controller
 
     public function destroy(Customer $customer)
     {
+        if ($customer->orders()->count() > 0) {
+            return back()->with('error', 'Cannot delete customer with existing orders. Please re-assign or delete orders first.');
+        }
+
         $customer->delete();
         return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
     }

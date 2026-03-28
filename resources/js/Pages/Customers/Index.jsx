@@ -10,6 +10,23 @@ export default function Index({ auth, customers }) {
             header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Customers</h2>}
         >
             <Head title="Customers" />
+
+            {auth.flash?.success && (
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
+                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                        <span className="block sm:inline">{auth.flash.success}</span>
+                    </div>
+                </div>
+            )}
+
+            {auth.flash?.error && (
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-4">
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <span className="block sm:inline">{auth.flash.error}</span>
+                    </div>
+                </div>
+            )}
+
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="mb-4 flex justify-end">
@@ -22,6 +39,7 @@ export default function Index({ auth, customers }) {
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Company</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Orders</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Phone</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
@@ -32,6 +50,7 @@ export default function Index({ auth, customers }) {
                                         <tr key={item.id}>
                                             <td className="px-6 py-4 whitespace-nowrap font-medium">{item.name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">{item.company_name || '-'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-600 font-bold">{item.orders_count > 0 ? `${item.orders_count} Orders` : '0'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">{item.email || '-'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">{item.phone || '-'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-4">

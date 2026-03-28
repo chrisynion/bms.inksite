@@ -17,9 +17,7 @@ class InventoryController extends Controller
 
     public function create()
     {
-        return Inertia::render('Inventory/Create', [
-            'rolls' => UtilityController::getRolls()
-        ]);
+        return Inertia::render('Inventory/Create');
     }
 
     public function store(Request $request)
@@ -56,7 +54,6 @@ class InventoryController extends Controller
     {
         return Inertia::render('Inventory/Edit', [
             'item' => $inventory,
-            'rolls' => UtilityController::getRolls()
         ]);
     }
 

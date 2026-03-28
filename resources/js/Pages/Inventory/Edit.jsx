@@ -4,7 +4,7 @@ import { useState } from 'react';
 import RollCalculatorModal from '@/Components/RollCalculatorModal';
 import SearchableSelect from '@/Components/SearchableSelect';
 
-export default function Edit({ auth, item, rolls }) {
+export default function Edit({ auth, item }) {
     const [showRollCalc, setShowRollCalc] = useState(false);
     const { data, setData, put, processing, errors } = useForm({
         name: item.name || '', type: item.type || '', color: item.color || '', finish: item.finish || '', 
@@ -106,7 +106,6 @@ export default function Edit({ auth, item, rolls }) {
                                     <RollCalculatorModal 
                                         show={showRollCalc} 
                                         onClose={() => setShowRollCalc(false)} 
-                                        rolls={rolls} 
                                         materialName={data.name}
                                         onSelect={handleRollSelect} 
                                     />

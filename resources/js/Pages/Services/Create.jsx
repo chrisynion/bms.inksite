@@ -3,7 +3,7 @@ import { Head, useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import RollCalculatorModal from '@/Components/RollCalculatorModal';
 
-export default function Create({ auth, inventory_items, equipment, rolls }) {
+export default function Create({ auth, inventory_items, equipment }) {
     const [showRollCalc, setShowRollCalc] = useState(false);
     const { data, setData, post, processing, errors } = useForm({
         name: '', 
@@ -110,8 +110,8 @@ export default function Create({ auth, inventory_items, equipment, rolls }) {
                                         <RollCalculatorModal 
                                             show={showRollCalc} 
                                             onClose={() => setShowRollCalc(false)} 
-                                            rolls={rolls} 
-                                            onSelect={(p) => { setData('price', p); setShowRollCalc(false); }} 
+                                            materialName={data.name}
+                                            onSelect={(res) => { setData('price', res.price); setShowRollCalc(false); }} 
                                         />
                                     </div>
                                     <div>
