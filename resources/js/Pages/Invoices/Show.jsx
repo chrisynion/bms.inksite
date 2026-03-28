@@ -151,14 +151,14 @@ export default function Show({ auth, invoice }) {
                         ) : (
                             <div className="space-y-4 mb-4">
                                 {payments.map(p => (
-                                    <div key={p.id} className="text-sm border p-3 rounded-lg dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
-                                        <div className="flex justify-between font-bold dark:text-white">
+                                    <div key={p.id} className="text-sm border p-3 rounded-lg dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                                        <div className="flex justify-between font-bold text-gray-900 dark:text-white">
                                             <span>₱{parseFloat(p.amount).toFixed(2)}</span>
-                                            <span>{new Date(p.payment_date).toLocaleDateString()}</span>
+                                            <span className="text-xs font-normal opacity-70">{new Date(p.payment_date).toLocaleDateString()}</span>
                                         </div>
                                         <div className="text-gray-500 text-xs mt-1 dark:text-gray-400 flex justify-between items-center">
-                                            <span>{p.payment_method.toUpperCase()} - {p.reference_number || 'No Ref'}</span>
-                                            <button onClick={() => deletePayment(p.id)} className="text-red-500 hover:text-red-700 ml-2" title="Delete PaymentRecord">
+                                            <span className="truncate pr-2">{p.payment_method.replace('_', ' ').toUpperCase()} - {p.reference_number || 'No Ref'}</span>
+                                            <button onClick={() => deletePayment(p.id)} className="text-red-500 hover:text-red-700 p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Delete Payment Record">
                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                             </button>
                                         </div>
