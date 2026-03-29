@@ -36,6 +36,7 @@ class OrderController extends Controller
             'status' => 'required|string',
             'order_total' => 'nullable|numeric|min:0',
             'payment_status' => 'required|string',
+            'payment_amount' => 'nullable|numeric|min:0',
             'order_notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.service_id' => 'nullable|exists:services,id',
@@ -56,6 +57,7 @@ class OrderController extends Controller
             'status' => $validated['status'],
             'order_total' => $validated['order_total'],
             'payment_status' => $validated['payment_status'],
+            'payment_amount' => $validated['payment_amount'] ?? 0,
             'order_notes' => $validated['order_notes'],
         ]);
 
@@ -97,6 +99,7 @@ class OrderController extends Controller
             'status' => 'required|string',
             'order_total' => 'nullable|numeric|min:0',
             'payment_status' => 'required|string',
+            'payment_amount' => 'nullable|numeric|min:0',
             'order_notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.id' => 'nullable|exists:order_items,id',
@@ -115,6 +118,7 @@ class OrderController extends Controller
             'status' => $validated['status'],
             'order_total' => $validated['order_total'],
             'payment_status' => $validated['payment_status'],
+            'payment_amount' => $validated['payment_amount'] ?? 0,
             'order_notes' => $validated['order_notes'],
         ]);
 

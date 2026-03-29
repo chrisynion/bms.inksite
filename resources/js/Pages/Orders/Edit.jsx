@@ -22,6 +22,7 @@ export default function Edit({ auth, order, customers, employees, services }) {
         status: order.status || 'pending',
         order_total: order.order_total || 0,
         payment_status: order.payment_status || 'unpaid',
+        payment_amount: order.payment_amount || 0,
         order_notes: order.order_notes || '',
         items: order.items.length > 0 ? order.items.map(i => ({...i, width: i.width || '', height: i.height || ''})) : [{ id: null, service_id: '', description: '', quantity: 1, unit_price: 0, width: '', height: '' }]
     });
@@ -44,7 +45,12 @@ export default function Edit({ auth, order, customers, employees, services }) {
         const newItems = [...data.items];
         newItems.splice(index, 1);
         const newTotal = calculateTotal(newItems);
-        setData(d => ({ ...d, items: newItems, order_total: newTotal }));
+        setData(d => ({ 
+            ...d, 
+            items: newItems, 
+            order_total: newTotal,
+            payment_amount: d.payment_status === 'paid' ? newTotal : d.payment_amount
+        }));
     };
 
     const updateItem = (index, field, value) => {
@@ -61,7 +67,12 @@ export default function Edit({ auth, order, customers, employees, services }) {
         }
         
         const newTotal = calculateTotal(newItems);
-        setData(d => ({ ...d, items: newItems, order_total: newTotal }));
+        setData(d => ({ 
+            ...d, 
+            items: newItems, 
+            order_total: newTotal,
+            payment_amount: d.payment_status === 'paid' ? newTotal : d.payment_amount 
+        }));
     };
 
     const submit = (e) => {
@@ -91,8 +102,8 @@ export default function Edit({ auth, order, customers, employees, services }) {
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer *</label>
                                     <SearchableSelect 
                                         options={customers.map(c => ({ 
-                                            value: c.id, 
-                                            label: `${c.name} ${c.company_name ? `(${c.company_name})` : ''}` 
+                                            id: c.id, 
+                                            name: `${c.name} ${c.company_name ? `(${c.company_name})` : ''}` 
                                         }))}
                                         value={data.customer_id}
                                         onChange={(val) => setData('customer_id', val)}
@@ -127,19 +138,45 @@ export default function Edit({ auth, order, customers, employees, services }) {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Payment Status *</label>
-                                    <select value={data.payment_status} onChange={e => setData('payment_status', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" required>
+                                    <select value={data.payment_status} onChange={e => {
+                                        const status = e.target.value;
+                                        setData(d => ({
+                                            ...d,
+                                            payment_status: status,
+                                            payment_amount: status === 'paid' ? data.order_total : d.payment_amount
+                                        }));
+                                    }} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" required>
                                         <option value="unpaid">Unpaid</option>
                                         <option value="partial">Partial / Deposit Paid</option>
                                         <option value="paid">Fully Paid</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Calculated Total</label>
-                                    <div className="mt-1 block w-full py-2 px-3 bg-gray-100 rounded-md border border-transparent dark:bg-gray-700 dark:text-gray-300 text-lg font-bold">
-                                        ₱{data.order_total}
+                                {data.payment_status !== 'unpaid' && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount Paid / Downpayment</label>
+                                        <input 
+                                            type="number" 
+                                            step="0.01" 
+                                            value={data.payment_amount} 
+                                            onChange={e => setData('payment_amount', e.target.value)} 
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" 
+                                        />
+                                        {errors.payment_amount && <div className="text-red-500 mt-1 text-sm">{errors.payment_amount}</div>}
                                     </div>
-                                    <input type="hidden" value={data.order_total} />
-                                </div>
+                                )}
+                                 <div className="flex flex-col">
+                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Calculated Total</label>
+                                     <div className="mt-1 block w-full py-2 px-3 bg-gray-100 rounded-md border border-transparent dark:bg-gray-700 dark:text-gray-300 text-lg font-bold">
+                                         ₱{data.order_total}
+                                     </div>
+                                     {data.payment_status === 'partial' && (
+                                         <div className="mt-2 text-sm">
+                                             <span className="text-gray-500 dark:text-gray-400">Balance Due: </span>
+                                             <span className="font-bold text-red-600 dark:text-red-400">₱{(data.order_total - (parseFloat(data.payment_amount) || 0)).toFixed(2)}</span>
+                                         </div>
+                                     )}
+                                     <input type="hidden" value={data.order_total} />
+                                 </div>
                                 <div className="md:col-span-3">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Order Notes (Internal)</label>
                                     <textarea value={data.order_notes} onChange={e => setData('order_notes', e.target.value)} rows="3" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300"></textarea>

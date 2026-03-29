@@ -62,8 +62,8 @@ export default function Create({ auth }) {
                                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Form (Material Format)</label>
                                      <SearchableSelect 
                                          options={[
-                                             { id: 'Roll', name: 'Roll (Flexible)' },
-                                             { id: 'Sheet', name: 'Sheet (Rigid)' },
+                                             { id: 'Roll', name: 'Roll' },
+                                             { id: 'Sheet', name: 'Sheet' },
                                              { id: 'Piece', name: 'Piece / Each' },
                                              { id: 'Meter', name: 'Linear Meter' }
                                          ]}

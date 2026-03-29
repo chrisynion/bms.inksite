@@ -69,9 +69,17 @@ export default function Index({ auth, orders }) {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full shadow-sm ${item.payment_status === 'paid' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : item.payment_status === 'partial' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
-                                                        {item.payment_status.toUpperCase()}
-                                                    </span>
+                                                    <div className="flex flex-col">
+                                                        <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full shadow-sm w-fit ${item.payment_status === 'paid' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : item.payment_status === 'partial' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
+                                                            {item.payment_status.toUpperCase()}
+                                                        </span>
+                                                        {item.payment_status === 'partial' && (
+                                                            <div className="mt-1 flex flex-col">
+                                                                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium tracking-tight">Paid: ₱{parseFloat(item.payment_amount || 0).toFixed(2)}</span>
+                                                                <span className="text-[10px] text-red-600 dark:text-red-400 font-bold tracking-tight">Due: ₱{(parseFloat(item.order_total) - parseFloat(item.payment_amount || 0)).toFixed(2)}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white">
                                                     ₱{parseFloat(item.order_total).toFixed(2)}
