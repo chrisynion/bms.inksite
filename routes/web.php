@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\SystemInstallController;
+
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ServiceController;
@@ -17,6 +19,8 @@ use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+Route::get('/system/install', [SystemInstallController::class, 'install'])->name('system.install');
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [

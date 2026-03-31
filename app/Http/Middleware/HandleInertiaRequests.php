@@ -35,8 +35,8 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'globalSettings' => [
-                'logo_url' => \App\Models\Setting::where('key', 'logo_path')->value('value') 
-                    ? asset('storage/' . \App\Models\Setting::where('key', 'logo_path')->value('value')) 
+                'logo_url' => (\Illuminate\Support\Facades\Schema::hasTable('settings') && ($path = \App\Models\Setting::where('key', 'logo_path')->value('value'))) 
+                    ? asset('uploads/' . $path) 
                     : null,
             ],
         ];

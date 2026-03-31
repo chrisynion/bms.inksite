@@ -35,7 +35,7 @@ class SettingController extends Controller
         );
 
         if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('logos', 'public');
+            $path = $request->file('logo')->store('logos', 'uploads');
             Setting::updateOrCreate(
                 ['key' => 'logo_path'],
                 ['value' => $path, 'type' => 'string', 'group' => 'general']

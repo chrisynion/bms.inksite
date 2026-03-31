@@ -1,2 +1,5 @@
 *
 !.gitignore
+!logos/
+logos/*
+!logos/.gitkeep
