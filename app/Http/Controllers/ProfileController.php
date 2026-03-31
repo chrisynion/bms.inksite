@@ -51,6 +51,11 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        // Prevent the last administrator from being deleted
+        if ($user->role === 'admin' && \App\Models\User::where('role', 'admin')->count() <= 1) {
+            return Redirect::back()->with('error', 'Cannot delete the only system administrator account.');
+        }
+
         Auth::logout();
 
         $user->delete();

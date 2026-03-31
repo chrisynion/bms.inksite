@@ -64,6 +64,11 @@ class UserController extends Controller
             'password' => ['nullable', 'confirmed', Password::defaults()],
         ]);
 
+        // Prevent the last administrator from changing their own role
+        if ($user->role === 'admin' && $validated['role'] !== 'admin' && \App\Models\User::where('role', 'admin')->count() <= 1) {
+            return redirect()->back()->with('error', 'The system must have at least one administrator.');
+        }
+
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->role = $validated['role'];
