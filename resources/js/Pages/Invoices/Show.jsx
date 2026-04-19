@@ -175,6 +175,15 @@ export default function Show({ auth, invoice }) {
                         <button onClick={() => window.print()} className="w-full mt-3 border border-gray-300 text-gray-700 dark:text-gray-300 dark:border-gray-600 font-medium py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                             Print Invoice
                         </button>
+                        <Link 
+                            href={route('invoices.destroy', invoice.id)} 
+                            method="delete" 
+                            as="button" 
+                            onBefore={() => confirm('Are you sure you want to delete this invoice? This will also remove any related payment records.')}
+                            className="w-full mt-3 border border-red-200 text-red-600 dark:text-red-400 dark:border-red-900 font-medium py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                        >
+                            Delete Invoice
+                        </Link>
                     </div>
 
                     {/* Payment Recording Form Dropdown */}

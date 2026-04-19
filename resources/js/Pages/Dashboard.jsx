@@ -79,7 +79,7 @@ export default function Dashboard({ auth, metrics = {}, recent_orders = [], low_
                                     </thead>
                                     <tbody>
                                         {recent_orders.length > 0 ? recent_orders.map((order) => (
-                                            <tr key={order.id} className="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
+                                            <tr key={order.id} className="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition">
                                                 <td className="px-6 py-4 font-semibold text-gray-900 dark:text-gray-200">#{order.id.toString().padStart(4, '0')}</td>
                                                 <td className="px-6 py-4 font-medium text-gray-700 dark:text-gray-300">{order.customer?.name || 'Unknown'}</td>
                                                 <td className="px-6 py-4 font-bold text-gray-900 dark:text-gray-200">₱{parseFloat(order.order_total).toFixed(2)}</td>

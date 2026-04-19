@@ -42,7 +42,7 @@ export default function Index({ auth, invoices }) {
                                         </tr>
                                     ) : (
                                         invoices.map((inv) => (
-                                            <tr key={inv.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition duration-150">
+                                            <tr key={inv.id} className="hover:bg-gray-100 dark:hover:bg-gray-700/50 transition duration-150">
                                                 <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-600 dark:text-blue-400">
                                                     <Link href={route('invoices.show', inv.id)}>{inv.invoice_number}</Link>
                                                 </td>
@@ -66,8 +66,17 @@ export default function Index({ auth, invoices }) {
                                                         {inv.status.toUpperCase()}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    <Link href={route('invoices.show', inv.id)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">View / Pay</Link>
+                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-3">
+                                                    <Link href={route('invoices.show', inv.id)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 transition">View / Pay</Link>
+                                                    <Link 
+                                                        href={route('invoices.destroy', inv.id)} 
+                                                        method="delete" 
+                                                        as="button" 
+                                                        onBefore={() => confirm('Are you sure you want to delete this invoice? This will also remove any related payment records.')}
+                                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition"
+                                                    >
+                                                        Delete
+                                                    </Link>
                                                 </td>
                                             </tr>
                                         ))
