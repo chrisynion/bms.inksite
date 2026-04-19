@@ -65,7 +65,7 @@ export default function Create({ auth }) {
                                              { id: 'Roll', name: 'Roll' },
                                              { id: 'Sheet', name: 'Sheet' },
                                              { id: 'Piece', name: 'Piece / Each' },
-                                             { id: 'Meter', name: 'Linear Meter' }
+                                             { id: 'ml', name: 'ml' }
                                          ]}
                                          value={data.form}
                                          onChange={(val) => handleFormChange(val)}

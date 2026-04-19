@@ -41,8 +41,15 @@ class Order extends Model
         foreach ($this->items as $item) {
             if ($item->service) {
                 foreach ($item->service->inventoryItems as $material) {
-                    $deductAmount = $material->pivot->quantity * $item->quantity;
-                    $material->decrement('quantity', $deductAmount);
+                    $multiplier = $item->quantity;
+                    
+                    // If the material is a Roll and the order item has dimensions, deduct by Area
+                    if (strtolower($material->form) === 'roll' && $item->width && $item->height) {
+                        $multiplier = $item->width * $item->height * $item->quantity;
+                    }
+                    
+                    $deductAmount = $material->pivot->quantity * $multiplier;
+                    $material->decrement('stock', $deductAmount);
                 }
             }
         }

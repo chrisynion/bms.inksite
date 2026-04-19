@@ -228,7 +228,7 @@ export default function Edit({ auth, service, inventory_items, equipment }) {
                                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Material</label>
                                             <select value={item.id} onChange={e => updateInventory(index, 'id', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:text-gray-300 text-sm">
                                                 <option value="">-- Select Material --</option>
-                                                {inventory_items.map(i => <option key={i.id} value={i.id}>{i.name} (Stock: {i.quantity} {i.unit})</option>)}
+                                                {inventory_items.map(i => <option key={i.id} value={i.id}>{i.name} (Stock: {i.stock} {i.form})</option>)}
                                             </select>
                                         </div>
                                         <div className="w-32">
