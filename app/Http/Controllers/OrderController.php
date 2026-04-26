@@ -86,7 +86,7 @@ class OrderController extends Controller
             'order' => $order->load(['items', 'invoice']),
             'customers' => Customer::orderBy('name')->get(),
             'employees' => Employee::orderBy('name')->get(),
-            'services' => \App\Models\Service::all(),
+            'services' => \App\Models\Service::withTrashed()->get(),
         ]);
     }
 

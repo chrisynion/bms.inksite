@@ -236,7 +236,7 @@ export default function Edit({ auth, order, customers, employees, services }) {
                                                         { id: '', name: '-- Custom Item --' },
                                                         ...services.map(s => ({ 
                                                             id: s.id, 
-                                                            name: `${s.name} (₱${parseFloat(s.price || 0).toFixed(2)})` 
+                                                            name: `${s.name}${s.deleted_at ? ' (Deleted)' : ''} (₱${parseFloat(s.price || 0).toFixed(2)})` 
                                                         }))
                                                     ]}
                                                     value={item.service_id || ''}
