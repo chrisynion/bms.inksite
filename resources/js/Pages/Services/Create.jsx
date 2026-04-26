@@ -1,7 +1,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import RollCalculatorModal from '@/Components/RollCalculatorModal';
+import SearchableSelect from '@/Components/SearchableSelect';
 
 export default function Create({ auth, inventory_items, equipment }) {
     const [showRollCalc, setShowRollCalc] = useState(false);
@@ -15,6 +16,12 @@ export default function Create({ auth, inventory_items, equipment }) {
         equipment: [],
         labor: [],
     });
+
+    const inventoryOptions = useMemo(() => 
+        inventory_items.map(i => ({
+            id: i.id,
+            name: `${i.name} (Stock: ${i.stock} ${i.form})`
+        })), [inventory_items]);
 
     const addInventory = () => {
         setData('inventory', [...data.inventory, { id: '', quantity: 1 }]);
@@ -219,10 +226,12 @@ export default function Create({ auth, inventory_items, equipment }) {
                                     <div key={index} className="flex items-end gap-4 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
                                         <div className="flex-1">
                                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Material</label>
-                                            <select value={item.id} onChange={e => updateInventory(index, 'id', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:text-gray-300 text-sm">
-                                                <option value="">-- Select Material --</option>
-                                                {inventory_items.map(i => <option key={i.id} value={i.id}>{i.name} (Stock: {i.stock} {i.form})</option>)}
-                                            </select>
+                                            <SearchableSelect 
+                                                options={inventoryOptions} 
+                                                value={item.id} 
+                                                onChange={val => updateInventory(index, 'id', val)} 
+                                                placeholder="-- Select Material --"
+                                            />
                                         </div>
                                         <div className="w-32">
                                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Qty Needed</label>
