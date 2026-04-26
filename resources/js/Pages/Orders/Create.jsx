@@ -17,6 +17,7 @@ const PRESET_SIZES = [
 ];
 
 export default function Create({ auth, customers, employees, services }) {
+    const [deletingKeys, setDeletingKeys] = useState([]);
     const { data, setData, post, processing, errors } = useForm({
         customer_id: '',
         assigned_to: '',
@@ -26,7 +27,7 @@ export default function Create({ auth, customers, employees, services }) {
         payment_status: 'unpaid',
         payment_amount: 0,
         order_notes: '',
-        items: [{ service_id: '', description: '', quantity: 1, unit_price: 0, width: '', height: '' }]
+        items: [{ _key: 'init-0', service_id: '', description: '', quantity: 1, unit_price: 0, width: '', height: '' }]
     });
 
     const [showQuickCustomer, setShowQuickCustomer] = useState(false);
@@ -71,19 +72,30 @@ export default function Create({ auth, customers, employees, services }) {
     };
 
     const addItem = () => {
-        setData('items', [...data.items, { service_id: '', description: '', quantity: 1, unit_price: 0, width: '', height: '' }]);
+        setData('items', [...data.items, { _key: `new-${Date.now()}`, service_id: '', description: '', quantity: 1, unit_price: 0, width: '', height: '' }]);
     };
 
     const removeItem = (index) => {
-        const newItems = [...data.items];
-        newItems.splice(index, 1);
-        const newTotal = calculateTotal(newItems);
-        setData(d => ({ 
-            ...d, 
-            items: newItems, 
-            order_total: newTotal,
-            payment_amount: d.payment_status === 'paid' ? newTotal : d.payment_amount
-        }));
+        const itemKey = data.items[index]._key;
+        if (deletingKeys.includes(itemKey)) return;
+
+        setDeletingKeys(prev => [...prev, itemKey]);
+        
+        setTimeout(() => {
+            const newItems = [...data.items];
+            const actualIndex = newItems.findIndex(item => item._key === itemKey);
+            if (actualIndex > -1) {
+                newItems.splice(actualIndex, 1);
+                const newTotal = calculateTotal(newItems);
+                setData(d => ({ 
+                    ...d, 
+                    items: newItems, 
+                    order_total: newTotal,
+                    payment_amount: d.payment_status === 'paid' ? newTotal : d.payment_amount
+                }));
+            }
+            setDeletingKeys(prev => prev.filter(k => k !== itemKey));
+        }, 500);
     };
 
     const updateItem = (index, field, value) => {
@@ -224,16 +236,41 @@ export default function Create({ auth, customers, employees, services }) {
                             
                             {errors.items && <div className="text-red-500 mb-4">{errors.items}</div>}
 
-                                  <div className="space-y-4">
-                                    {data.items.map((item, index) => (
-                                        <div key={index} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-[#053a8078] transition-colors duration-300 shadow-sm hover:shadow-md">
+                                    <div className="space-y-4">
+                                        {data.items.map((item, index) => {
+                                            const isDeleting = deletingKeys.includes(item._key);
+                                            return (
+                                                <div 
+                                                    key={item._key} 
+                                                    className={`relative ${index % 2 === 0 ? 'bg-white dark:bg-gray-800/50' : 'bg-gray-50/80 dark:bg-gray-900/50'} p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-all duration-500 shadow-sm hover:shadow-md ${isDeleting ? 'opacity-0 -translate-x-8 scale-95 pointer-events-none' : 'opacity-100'}`}
+                                                >
+                                                    {isDeleting && (
+                                                        <div className="absolute inset-0 bg-red-50/50 dark:bg-red-900/10 flex items-center justify-center backdrop-blur-[1px] z-10 rounded-lg">
+                                                            <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse shadow-lg flex items-center gap-2">
+                                                                <svg className="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                </svg>
+                                                                Removing...
+                                                            </span>
+                                                        </div>
+                                                    )}
                                             <div className="grid grid-cols-12 gap-4 items-end mb-4">
                                                 <div className="col-span-12 md:col-span-4">
                                                     <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Service</label>
-                                                    <select value={item.service_id || ''} onChange={e => updateItem(index, 'service_id', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm">
-                                                        <option value="">-- Custom Item --</option>
-                                                        {services.map(s => <option key={s.id} value={s.id}>{s.name} (₱{parseFloat(s.price || 0).toFixed(2)})</option>)}
-                                                    </select>
+                                                    <SearchableSelect 
+                                                        options={[
+                                                            { id: '', name: '-- Custom Item --' },
+                                                            ...services.map(s => ({ 
+                                                                id: s.id, 
+                                                                name: `${s.name} (₱${parseFloat(s.price || 0).toFixed(2)})` 
+                                                            }))
+                                                        ]}
+                                                        value={item.service_id || ''}
+                                                        onChange={(val) => updateItem(index, 'service_id', val)}
+                                                        placeholder="-- Search Service --"
+                                                        className="mt-1"
+                                                    />
                                                 </div>
                                                 <div className="col-span-4 md:col-span-2">
                                                     <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Qty *</label>
@@ -287,9 +324,10 @@ export default function Create({ auth, customers, employees, services }) {
                                                     <input type="text" value={item.description} onChange={e => updateItem(index, 'description', e.target.value)} placeholder="e.g. Glossy finish" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs" />
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                         </div>
 
                         {/* Submit */}
