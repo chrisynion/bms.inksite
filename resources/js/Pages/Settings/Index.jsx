@@ -4,7 +4,7 @@ import { Head, useForm } from '@inertiajs/react';
 export default function Index({ auth, settings }) {
     const { data, setData, post, processing, errors, recentlySuccessful } = useForm({
         overtime_multiplier: settings.overtime_multiplier?.value || '1.30',
-        payment_modes: settings.payment_modes?.value ? JSON.parse(settings.payment_modes.value) : ['Cash', 'GCash', 'Bank Transfer'],
+        payment_modes: settings.payment_modes?.value ? JSON.parse(settings.payment_modes.value) : [{name: 'Cash', initial_amount: 0}, {name: 'GCash', initial_amount: 0}, {name: 'Bank Transfer', initial_amount: 0}],
         logo: null,
     });
 
@@ -44,28 +44,48 @@ export default function Index({ auth, settings }) {
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Accepted Payment Modes</label>
                                 <div className="mt-2 space-y-2">
                                     {data.payment_modes.map((mode, idx) => (
-                                        <div key={idx} className="flex items-center gap-2">
-                                            <input 
-                                                type="text" 
-                                                value={mode} 
-                                                onChange={e => {
-                                                    const newModes = [...data.payment_modes];
-                                                    newModes[idx] = e.target.value;
-                                                    setData('payment_modes', newModes);
-                                                }}
-                                                className="flex-1 rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-600 dark:text-white sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" 
-                                                required
-                                            />
-                                            {data.payment_modes.length > 1 && (
-                                                <button type="button" onClick={() => {
-                                                    setData('payment_modes', data.payment_modes.filter((_, i) => i !== idx));
-                                                }} className="text-red-500 hover:text-red-700">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                                                </button>
-                                            )}
+                                        <div key={idx} className="flex flex-col sm:flex-row items-center gap-2 mb-2 p-3 bg-gray-50 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
+                                            <div className="w-full sm:w-1/2">
+                                                <label className="block text-xs font-medium text-gray-500 mb-1">Mode Name</label>
+                                                <input 
+                                                    type="text" 
+                                                    value={mode.name || ''} 
+                                                    onChange={e => {
+                                                        const newModes = [...data.payment_modes];
+                                                        newModes[idx] = { ...newModes[idx], name: e.target.value };
+                                                        setData('payment_modes', newModes);
+                                                    }}
+                                                    className="w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" 
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="w-full sm:w-1/2 flex items-end gap-2">
+                                                <div className="flex-1">
+                                                    <label className="block text-xs font-medium text-gray-500 mb-1">Initial Balance (₱)</label>
+                                                    <input 
+                                                        type="number" 
+                                                        step="0.01"
+                                                        value={mode.initial_amount || 0} 
+                                                        onChange={e => {
+                                                            const newModes = [...data.payment_modes];
+                                                            newModes[idx] = { ...newModes[idx], initial_amount: e.target.value };
+                                                            setData('payment_modes', newModes);
+                                                        }}
+                                                        className="w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" 
+                                                        required
+                                                    />
+                                                </div>
+                                                {data.payment_modes.length > 1 && (
+                                                    <button type="button" onClick={() => {
+                                                        setData('payment_modes', data.payment_modes.filter((_, i) => i !== idx));
+                                                    }} className="text-red-500 hover:text-red-700 p-2 mb-1">
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
-                                    <button type="button" onClick={() => setData('payment_modes', [...data.payment_modes, ''])} className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-medium mt-2 block">
+                                    <button type="button" onClick={() => setData('payment_modes', [...data.payment_modes, {name: '', initial_amount: 0}])} className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-medium mt-2 block">
                                         + Add Payment Mode
                                     </button>
                                     {errors.payment_modes && <div className="text-red-500 text-xs mt-1">{errors.payment_modes}</div>}

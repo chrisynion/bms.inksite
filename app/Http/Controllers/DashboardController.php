@@ -42,6 +42,40 @@ class DashboardController extends Controller
             ->take(8)
             ->get();
 
+        // 7. Account Balances
+        $settings = \App\Models\Setting::where('key', 'payment_modes')->first();
+        $paymentModes = $settings ? json_decode($settings->value, true) : [];
+        $accountBalances = [];
+        
+        if (is_array($paymentModes)) {
+            foreach ($paymentModes as $mode) {
+                $name = is_array($mode) && isset($mode['name']) ? $mode['name'] : (is_string($mode) ? $mode : 'Unknown');
+                $initial = is_array($mode) && isset($mode['initial_amount']) ? (float)$mode['initial_amount'] : 0;
+                $accountBalances[$name] = [
+                    'name' => $name,
+                    'balance' => $initial
+                ];
+            }
+        }
+
+        $payments = \App\Models\OrderPayment::whereHas('order', function($q) {
+                $q->where('status', '!=', 'cancelled');
+            })
+            ->selectRaw('payment_mode, SUM(amount) as total')
+            ->groupBy('payment_mode')
+            ->get();
+
+        foreach ($payments as $payment) {
+            if (isset($accountBalances[$payment->payment_mode])) {
+                $accountBalances[$payment->payment_mode]['balance'] += (float)$payment->total;
+            } else {
+                $accountBalances[$payment->payment_mode] = [
+                    'name' => $payment->payment_mode,
+                    'balance' => (float)$payment->total
+                ];
+            }
+        }
+
         return Inertia::render('Dashboard', [
             'metrics' => [
                 'current_month_revenue' => $currentMonthRevenue,
@@ -51,6 +85,7 @@ class DashboardController extends Controller
             ],
             'recent_orders' => $recentOrders,
             'low_stock_items' => $lowStockItems,
+            'account_balances' => array_values($accountBalances),
         ]);
     }
 }

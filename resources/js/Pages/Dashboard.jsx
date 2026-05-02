@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 
-export default function Dashboard({ auth, metrics = {}, recent_orders = [], low_stock_items = [] }) {
+export default function Dashboard({ auth, metrics = {}, recent_orders = [], low_stock_items = [], account_balances = [] }) {
     
     const formattedRevenue = '₱' + new Intl.NumberFormat('en-PH').format(metrics.current_month_revenue || 0);
 
@@ -56,6 +56,21 @@ export default function Dashboard({ auth, metrics = {}, recent_orders = [], low_
                             <svg className="absolute -right-4 -bottom-4 w-32 h-32 text-white/10 group-hover:scale-110 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                         </div>
                     </div>
+
+                    {/* Account Balances Section */}
+                    {account_balances?.length > 0 && (
+                        <div className="mb-8">
+                            <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Account Balances</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {account_balances.map(account => (
+                                    <div key={account.name} className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition flex flex-col justify-center">
+                                        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 truncate">{account.name}</div>
+                                        <div className="text-2xl font-black text-gray-900 dark:text-white">₱{new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(account.balance)}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Bottom Area Grid */}
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">

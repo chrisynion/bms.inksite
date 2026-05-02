@@ -18,7 +18,11 @@ class SettingController extends Controller
         }
 
         if (!$settings->has('payment_modes')) {
-            $settings['payment_modes'] = (object) ['key' => 'payment_modes', 'value' => json_encode(['Cash', 'GCash', 'Bank Transfer'])];
+            $settings['payment_modes'] = (object) ['key' => 'payment_modes', 'value' => json_encode([
+                ['name' => 'Cash', 'initial_amount' => 0],
+                ['name' => 'GCash', 'initial_amount' => 0],
+                ['name' => 'Bank Transfer', 'initial_amount' => 0]
+            ])];
         }
 
         return Inertia::render('Settings/Index', [
@@ -32,7 +36,8 @@ class SettingController extends Controller
             'overtime_multiplier' => 'required|numeric|min:1',
             'logo' => 'nullable|image|max:2048',
             'payment_modes' => 'required|array|min:1',
-            'payment_modes.*' => 'required|string|max:255',
+            'payment_modes.*.name' => 'required|string|max:255',
+            'payment_modes.*.initial_amount' => 'required|numeric|min:0',
         ]);
 
         Setting::updateOrCreate(

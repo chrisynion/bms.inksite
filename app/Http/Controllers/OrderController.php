@@ -21,13 +21,14 @@ class OrderController extends Controller
     public function create()
     {
         $settings = \App\Models\Setting::where('key', 'payment_modes')->first();
-        $paymentModes = $settings ? json_decode($settings->value) : ['Cash', 'GCash', 'Bank Transfer'];
+        $paymentModes = $settings ? json_decode($settings->value, true) : [['name'=>'Cash','initial_amount'=>0], ['name'=>'GCash','initial_amount'=>0], ['name'=>'Bank Transfer','initial_amount'=>0]];
+        $paymentModeNames = array_map(function($mode) { return is_array($mode) && isset($mode['name']) ? $mode['name'] : (is_string($mode) ? $mode : 'Unknown'); }, $paymentModes);
 
         return Inertia::render('Orders/Create', [
             'customers' => Customer::orderBy('name')->get(),
             'employees' => Employee::orderBy('name')->get(),
             'services' => \App\Models\Service::all(),
-            'payment_modes' => $paymentModes,
+            'payment_modes' => $paymentModeNames,
         ]);
     }
 
@@ -109,14 +110,15 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         $settings = \App\Models\Setting::where('key', 'payment_modes')->first();
-        $paymentModes = $settings ? json_decode($settings->value) : ['Cash', 'GCash', 'Bank Transfer'];
+        $paymentModes = $settings ? json_decode($settings->value, true) : [['name'=>'Cash','initial_amount'=>0], ['name'=>'GCash','initial_amount'=>0], ['name'=>'Bank Transfer','initial_amount'=>0]];
+        $paymentModeNames = array_map(function($mode) { return is_array($mode) && isset($mode['name']) ? $mode['name'] : (is_string($mode) ? $mode : 'Unknown'); }, $paymentModes);
 
         return Inertia::render('Orders/Edit', [
             'order' => $order->load(['items', 'invoice', 'payments']),
             'customers' => Customer::orderBy('name')->get(),
             'employees' => Employee::orderBy('name')->get(),
             'services' => \App\Models\Service::withTrashed()->get(),
-            'payment_modes' => $paymentModes,
+            'payment_modes' => $paymentModeNames,
         ]);
     }
 
