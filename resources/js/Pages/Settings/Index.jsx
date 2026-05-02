@@ -4,6 +4,7 @@ import { Head, useForm } from '@inertiajs/react';
 export default function Index({ auth, settings }) {
     const { data, setData, post, processing, errors, recentlySuccessful } = useForm({
         overtime_multiplier: settings.overtime_multiplier?.value || '1.30',
+        payment_modes: settings.payment_modes?.value ? JSON.parse(settings.payment_modes.value) : ['Cash', 'GCash', 'Bank Transfer'],
         logo: null,
     });
 
@@ -37,6 +38,40 @@ export default function Index({ auth, settings }) {
                                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Example: Setting this to <code>1.30</code> means overtime is paid at regular hourly rate + 30%.</p>
                                 {errors.overtime_multiplier && <div className="text-red-500 text-xs mt-1">{errors.overtime_multiplier}</div>}
                             </div>
+                            
+                            <div className="mt-8 border-t pt-6 dark:border-gray-700">
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Payment Options</h3>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Accepted Payment Modes</label>
+                                <div className="mt-2 space-y-2">
+                                    {data.payment_modes.map((mode, idx) => (
+                                        <div key={idx} className="flex items-center gap-2">
+                                            <input 
+                                                type="text" 
+                                                value={mode} 
+                                                onChange={e => {
+                                                    const newModes = [...data.payment_modes];
+                                                    newModes[idx] = e.target.value;
+                                                    setData('payment_modes', newModes);
+                                                }}
+                                                className="flex-1 rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-600 dark:text-white sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" 
+                                                required
+                                            />
+                                            {data.payment_modes.length > 1 && (
+                                                <button type="button" onClick={() => {
+                                                    setData('payment_modes', data.payment_modes.filter((_, i) => i !== idx));
+                                                }} className="text-red-500 hover:text-red-700">
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                    <button type="button" onClick={() => setData('payment_modes', [...data.payment_modes, ''])} className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-medium mt-2 block">
+                                        + Add Payment Mode
+                                    </button>
+                                    {errors.payment_modes && <div className="text-red-500 text-xs mt-1">{errors.payment_modes}</div>}
+                                </div>
+                            </div>
+                            
                             <div className="mt-8">
                                 <button type="submit" disabled={processing} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
                                     Save Settings

@@ -14,7 +14,7 @@ const PRESET_SIZES = [
     { name: '8x10 in', w: 8, h: 10 },
 ];
 
-export default function Edit({ auth, order, customers, employees, services }) {
+export default function Edit({ auth, order, customers, employees, services, payment_modes }) {
     const [deletingKeys, setDeletingKeys] = useState([]);
     const { data, setData, put, processing, errors } = useForm({
         customer_id: order.customer_id || '',
@@ -23,7 +23,16 @@ export default function Edit({ auth, order, customers, employees, services }) {
         status: order.status || 'pending',
         order_total: order.order_total || 0,
         payment_status: order.payment_status || 'unpaid',
-        payment_amount: order.payment_amount || 0,
+        payments: order.payments?.length > 0 
+            ? order.payments.map(p => ({
+                id: p.id,
+                _key: p.id || `init-${Date.now()}-${Math.random()}`,
+                payment_mode: p.payment_mode,
+                amount: p.amount,
+                reference_number: p.reference_number || '',
+                payment_date: p.payment_date ? p.payment_date.split('T')[0] : new Date().toISOString().split('T')[0]
+            }))
+            : [],
         order_notes: order.order_notes || '',
         items: order.items.length > 0 
             ? order.items.map((i, idx) => ({...i, _key: i.id || `init-${idx}`, width: i.width || '', height: i.height || ''})) 
@@ -60,7 +69,6 @@ export default function Edit({ auth, order, customers, employees, services }) {
                     ...d, 
                     items: newItems, 
                     order_total: newTotal,
-                    payment_amount: d.payment_status === 'paid' ? newTotal : d.payment_amount
                 }));
             }
             setDeletingKeys(prev => prev.filter(k => k !== itemKey));
@@ -85,7 +93,6 @@ export default function Edit({ auth, order, customers, employees, services }) {
             ...d, 
             items: newItems, 
             order_total: newTotal,
-            payment_amount: d.payment_status === 'paid' ? newTotal : d.payment_amount 
         }));
     };
 
@@ -154,11 +161,15 @@ export default function Edit({ auth, order, customers, employees, services }) {
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Payment Status *</label>
                                     <select value={data.payment_status} onChange={e => {
                                         const status = e.target.value;
-                                        setData(d => ({
-                                            ...d,
-                                            payment_status: status,
-                                            payment_amount: status === 'paid' ? data.order_total : d.payment_amount
-                                        }));
+                                        setData(d => {
+                                            const newD = { ...d, payment_status: status };
+                                            if (status === 'paid' && newD.payments.length === 0) {
+                                                newD.payments = [{ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: newD.order_total, reference_number: '', payment_date: new Date().toISOString().split('T')[0] }];
+                                            } else if (status === 'partial' && newD.payments.length === 0) {
+                                                newD.payments = [{ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: '', reference_number: '', payment_date: new Date().toISOString().split('T')[0] }];
+                                            }
+                                            return newD;
+                                        });
                                     }} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" required>
                                         <option value="unpaid">Unpaid</option>
                                         <option value="partial">Partial / Deposit Paid</option>
@@ -166,16 +177,56 @@ export default function Edit({ auth, order, customers, employees, services }) {
                                     </select>
                                 </div>
                                 {data.payment_status !== 'unpaid' && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount Paid / Downpayment</label>
-                                        <input 
-                                            type="number" 
-                                            step="0.01" 
-                                            value={data.payment_amount} 
-                                            onChange={e => setData('payment_amount', e.target.value)} 
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" 
-                                        />
-                                        {errors.payment_amount && <div className="text-red-500 mt-1 text-sm">{errors.payment_amount}</div>}
+                                    <div className="md:col-span-3 border-t pt-4 mt-2 dark:border-gray-700">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Payments</label>
+                                            <button type="button" onClick={() => {
+                                                setData('payments', [...data.payments, { _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: '', reference_number: '', payment_date: new Date().toISOString().split('T')[0] }]);
+                                            }} className="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-medium">+ Add Payment Mode</button>
+                                        </div>
+                                        {data.payments.length === 0 && (
+                                            <p className="text-sm text-red-500 mb-2">Please add at least one payment mode.</p>
+                                        )}
+                                        <div className="space-y-3">
+                                            {data.payments.map((p, idx) => (
+                                                <div key={p._key || idx} className="flex flex-wrap md:flex-nowrap items-end gap-3 bg-gray-50 dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700">
+                                                    <div className="w-full md:w-1/4">
+                                                        <label className="block text-xs text-gray-500 mb-1">Mode *</label>
+                                                        <select value={p.payment_mode} onChange={e => {
+                                                            const newP = [...data.payments]; newP[idx].payment_mode = e.target.value; setData('payments', newP);
+                                                        }} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required>
+                                                            {payment_modes.map(m => <option key={m} value={m}>{m}</option>)}
+                                                        </select>
+                                                    </div>
+                                                    <div className="w-full md:w-1/4">
+                                                        <label className="block text-xs text-gray-500 mb-1">Amount *</label>
+                                                        <input type="number" step="0.01" min="0" value={p.amount} onChange={e => {
+                                                            const newP = [...data.payments]; newP[idx].amount = e.target.value; setData('payments', newP);
+                                                        }} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
+                                                    </div>
+                                                    <div className="w-full md:w-1/4">
+                                                        <label className="block text-xs text-gray-500 mb-1">Ref No. (Optional)</label>
+                                                        <input type="text" value={p.reference_number || ''} onChange={e => {
+                                                            const newP = [...data.payments]; newP[idx].reference_number = e.target.value; setData('payments', newP);
+                                                        }} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" />
+                                                    </div>
+                                                    <div className="w-full md:w-1/4">
+                                                        <label className="block text-xs text-gray-500 mb-1">Date *</label>
+                                                        <input type="date" value={p.payment_date || ''} onChange={e => {
+                                                            const newP = [...data.payments]; newP[idx].payment_date = e.target.value; setData('payments', newP);
+                                                        }} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
+                                                    </div>
+                                                    <div>
+                                                        <button type="button" onClick={() => {
+                                                            setData('payments', data.payments.filter((_, i) => i !== idx));
+                                                        }} className="text-red-500 hover:text-red-700 p-2">
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {errors.payments && <div className="text-red-500 text-sm mt-1">{errors.payments}</div>}
+                                        </div>
                                     </div>
                                 )}
                                  <div className="flex flex-col">
@@ -186,7 +237,7 @@ export default function Edit({ auth, order, customers, employees, services }) {
                                      {data.payment_status === 'partial' && (
                                          <div className="mt-2 text-sm">
                                              <span className="text-gray-500 dark:text-gray-400">Balance Due: </span>
-                                             <span className="font-bold text-red-600 dark:text-red-400">₱{(data.order_total - (parseFloat(data.payment_amount) || 0)).toFixed(2)}</span>
+                                             <span className="font-bold text-red-600 dark:text-red-400">₱{(data.order_total - data.payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)).toFixed(2)}</span>
                                          </div>
                                      )}
                                      <input type="hidden" value={data.order_total} />

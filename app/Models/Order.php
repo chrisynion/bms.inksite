@@ -31,6 +31,10 @@ class Order extends Model
         return $this->hasOne(Invoice::class);
     }
 
+    public function payments() {
+        return $this->hasMany(OrderPayment::class);
+    }
+
     /**
      * Deduct inventory based on services in the order.
      */

@@ -3,36 +3,9 @@ import { Head, Link, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Show({ auth, invoice }) {
-    const { order, payments } = invoice;
+    const { order } = invoice;
+    const payments = order.payments || [];
     const { customer } = order;
-    
-    const [showPaymentModal, setShowPaymentModal] = useState(false);
-    
-    // Payment Form
-    const { data, setData, post, processing, errors, reset } = useForm({
-        invoice_id: invoice.id,
-        amount: invoice.total_amount - payments.reduce((sum, p) => sum + parseFloat(p.amount), 0),
-        payment_method: 'bank_transfer',
-        payment_date: new Date().toISOString().split('T')[0],
-        reference_number: '',
-        notes: ''
-    });
-
-    const submitPayment = (e) => {
-        e.preventDefault();
-        post(route('payments.store'), {
-            onSuccess: () => {
-                setShowPaymentModal(false);
-                reset();
-            }
-        });
-    };
-
-    const deletePayment = (id) => {
-        if(confirm('Delete this payment record?')) {
-            router.delete(route('payments.destroy', id));
-        }
-    };
     
     const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
     const amountDue = invoice.total_amount - totalPaid;
@@ -157,10 +130,7 @@ export default function Show({ auth, invoice }) {
                                             <span className="text-xs font-normal opacity-70">{new Date(p.payment_date).toLocaleDateString()}</span>
                                         </div>
                                         <div className="text-gray-500 text-xs mt-1 dark:text-gray-400 flex justify-between items-center">
-                                            <span className="truncate pr-2">{p.payment_method.replace('_', ' ').toUpperCase()} - {p.reference_number || 'No Ref'}</span>
-                                            <button onClick={() => deletePayment(p.id)} className="text-red-500 hover:text-red-700 p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Delete Payment Record">
-                                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                            </button>
+                                            <span className="truncate pr-2">{p.payment_mode.replace('_', ' ').toUpperCase()} - {p.reference_number || 'No Ref'}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -168,9 +138,9 @@ export default function Show({ auth, invoice }) {
                         )}
 
                         {amountDue > 0 && (
-                            <button onClick={() => setShowPaymentModal(!showPaymentModal)} className="w-full bg-green-600 text-white font-medium py-2 rounded-lg hover:bg-green-700 transition">
-                                Record Payment
-                            </button>
+                            <Link href={route('orders.edit', order.id)} className="w-full bg-indigo-600 text-white font-medium py-2 rounded-lg hover:bg-indigo-700 transition flex justify-center text-sm">
+                                Manage Payments on Order
+                            </Link>
                         )}
                         <button onClick={() => window.print()} className="w-full mt-3 border border-gray-300 text-gray-700 dark:text-gray-300 dark:border-gray-600 font-medium py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                             Print Invoice
@@ -186,40 +156,7 @@ export default function Show({ auth, invoice }) {
                         </Link>
                     </div>
 
-                    {/* Payment Recording Form Dropdown */}
-                    {showPaymentModal && amountDue > 0 && (
-                        <div className="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg border border-green-200 dark:border-green-900 p-6 animate-fade-in-up">
-                            <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-4 text-green-600 dark:text-green-400">New Payment</h3>
-                            <form onSubmit={submitPayment} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount (₱)</label>
-                                    <input type="number" step="0.01" max={amountDue} value={data.amount} onChange={e => setData('amount', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm dark:bg-gray-900 dark:border-gray-600 dark:text-white" required />
-                                    {errors.amount && <div className="text-red-500 text-xs mt-1">{errors.amount}</div>}
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Method</label>
-                                    <select value={data.payment_method} onChange={e => setData('payment_method', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm dark:bg-gray-900 dark:border-gray-600 dark:text-white" required>
-                                        <option value="bank_transfer">Bank Transfer</option>
-                                        <option value="credit_card">Credit Card</option>
-                                        <option value="cash">Cash</option>
-                                        <option value="check">Check</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
-                                    <input type="date" value={data.payment_date} onChange={e => setData('payment_date', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm dark:bg-gray-900 dark:border-gray-600 dark:text-white" required />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Reference / Check #</label>
-                                    <input type="text" value={data.reference_number} onChange={e => setData('reference_number', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm dark:bg-gray-900 dark:border-gray-600 dark:text-white" />
-                                </div>
-                                <div className="pt-2 flex justify-end gap-3">
-                                    <button type="button" onClick={() => setShowPaymentModal(false)} className="text-gray-500 hover:text-gray-700 text-sm font-medium">Cancel</button>
-                                    <button type="submit" disabled={processing} className="bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 transition">Save Payment</button>
-                                </div>
-                            </form>
-                        </div>
-                    )}
+
                 </div>
             </div>
 

@@ -17,6 +17,10 @@ class SettingController extends Controller
             $settings['overtime_multiplier'] = (object) ['key' => 'overtime_multiplier', 'value' => '1.30'];
         }
 
+        if (!$settings->has('payment_modes')) {
+            $settings['payment_modes'] = (object) ['key' => 'payment_modes', 'value' => json_encode(['Cash', 'GCash', 'Bank Transfer'])];
+        }
+
         return Inertia::render('Settings/Index', [
             'settings' => $settings
         ]);
@@ -26,12 +30,19 @@ class SettingController extends Controller
     {
         $validated = $request->validate([
             'overtime_multiplier' => 'required|numeric|min:1',
-            'logo' => 'nullable|image|max:2048'
+            'logo' => 'nullable|image|max:2048',
+            'payment_modes' => 'required|array|min:1',
+            'payment_modes.*' => 'required|string|max:255',
         ]);
 
         Setting::updateOrCreate(
             ['key' => 'overtime_multiplier'],
             ['value' => $validated['overtime_multiplier'], 'type' => 'numeric', 'group' => 'general']
+        );
+
+        Setting::updateOrCreate(
+            ['key' => 'payment_modes'],
+            ['value' => json_encode($validated['payment_modes']), 'type' => 'json', 'group' => 'general']
         );
 
         if ($request->hasFile('logo')) {

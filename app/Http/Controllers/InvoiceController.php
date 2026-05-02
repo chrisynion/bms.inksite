@@ -20,7 +20,7 @@ class InvoiceController extends Controller
     public function show(Invoice $invoice)
     {
         return Inertia::render('Invoices/Show', [
-            'invoice' => $invoice->load(['order.customer', 'order.items.service', 'payments'])
+            'invoice' => $invoice->load(['order.customer', 'order.items.service', 'order.payments'])
         ]);
     }
 
@@ -74,9 +74,6 @@ class InvoiceController extends Controller
 
     public function destroy(Invoice $invoice)
     {
-        // Delete related payments first
-        $invoice->payments()->delete();
-        
         $invoice->delete();
         
         return redirect()->route('invoices.index')->with('success', 'Invoice deleted successfully.');
