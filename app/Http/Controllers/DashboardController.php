@@ -16,10 +16,12 @@ class DashboardController extends Controller
         $now = Carbon::now();
         $startOfMonth = $now->copy()->startOfMonth();
 
-        // 1. Current Month Revenue (Only for non-cancelled and paid orders, or simply total value of orders placed this month - let's use all non-cancelled orders for total sales volume this month)
-        $currentMonthRevenue = Order::where('status', '!=', 'cancelled')
-            ->whereBetween('created_at', [$startOfMonth, $now])
-            ->sum('order_total');
+        // 1. Current Month Actual Income (Total cash received this month for non-cancelled orders)
+        $currentMonthRevenue = \App\Models\OrderPayment::whereHas('order', function($q) {
+                $q->where('status', '!=', 'cancelled');
+            })
+            ->whereBetween('payment_date', [$startOfMonth->toDateString(), $now->toDateString()])
+            ->sum('amount');
 
         // 2. Pending Orders Count (Pending Approval & Quote)
         $pendingOrdersCount = Order::whereIn('status', ['quote', 'pending'])->count();
