@@ -36,6 +36,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <NavLink href={route('invoices.index')} active={route().current('invoices.*')}>
                                     Invoices
                                 </NavLink>
+                                <NavLink href={route('transactions.index')} active={route().current('transactions.*')}>
+                                    Cashbook
+                                </NavLink>
 
                                 {/* Operations Dropdown */}
                                 <div className="hidden sm:flex sm:items-center">
@@ -211,6 +214,12 @@ export default function AuthenticatedLayout({ header, children }) {
                             active={route().current('customers.*')}
                         >
                             Customers
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('transactions.index')}
+                            active={route().current('transactions.*')}
+                        >
+                            Cashbook
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             href={route('settings.index')}

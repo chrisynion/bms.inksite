@@ -17,6 +17,7 @@ use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ContractorController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -44,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('invoices', InvoiceController::class);
     Route::resource('payments', PaymentController::class);
     Route::resource('customers', CustomerController::class);
+    Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'destroy']);
     
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('settings', [SettingController::class, 'update'])->name('settings.update');

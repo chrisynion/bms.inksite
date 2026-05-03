@@ -78,6 +78,21 @@ class DashboardController extends Controller
             }
         }
 
+        $ledgerTransactions = \App\Models\Transaction::selectRaw('payment_mode, SUM(amount) as total')
+            ->groupBy('payment_mode')
+            ->get();
+
+        foreach ($ledgerTransactions as $tx) {
+            if (isset($accountBalances[$tx->payment_mode])) {
+                $accountBalances[$tx->payment_mode]['balance'] += (float)$tx->total;
+            } else {
+                $accountBalances[$tx->payment_mode] = [
+                    'name' => $tx->payment_mode,
+                    'balance' => (float)$tx->total
+                ];
+            }
+        }
+
         return Inertia::render('Dashboard', [
             'metrics' => [
                 'current_month_revenue' => $currentMonthRevenue,
