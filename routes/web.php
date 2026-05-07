@@ -46,9 +46,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('payments', PaymentController::class);
     Route::resource('customers', CustomerController::class);
     Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'destroy']);
-    Route::get('quotation', function () {
-        return Inertia::render('Quotation/Index');
-    })->name('quotation.index');
+    Route::get('quotation', [\App\Http\Controllers\QuotationController::class, 'index'])->name('quotation.index');
+    Route::post('quotation/settings', [\App\Http\Controllers\QuotationController::class, 'updateSettings'])->name('quotation.settings.update');
     
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
