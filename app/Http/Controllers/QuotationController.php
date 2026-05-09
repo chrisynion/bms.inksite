@@ -18,6 +18,7 @@ class QuotationController extends Controller
                 'logo' => $settings->has('quotation_logo') ? asset('storage/' . $settings['quotation_logo']->value) : null,
                 'bgImage' => $settings->has('quotation_bg') ? asset('storage/' . $settings['quotation_bg']->value) : null,
                 'companyDetails' => $settings['quotation_company_details']->value ?? null,
+                'clientDetails' => $settings['quotation_client_details']->value ?? null,
                 'thankYouTitle' => $settings['quotation_thank_you_title']->value ?? null,
                 'thankYouMessage' => $settings['quotation_thank_you_message']->value ?? null,
                 'inclusionsTitle' => $settings['quotation_inclusions_title']->value ?? null,
@@ -26,6 +27,7 @@ class QuotationController extends Controller
                 'terms' => $settings->has('quotation_terms') ? json_decode($settings['quotation_terms']->value, true) : null,
                 'tableTitle' => $settings['quotation_table_title']->value ?? null,
                 'tableFooterNote' => $settings['quotation_table_footer']->value ?? null,
+                'tableOptions' => $settings->has('quotation_table_options') ? json_decode($settings['quotation_table_options']->value, true) : null,
             ]
         ]);
     }
@@ -60,6 +62,7 @@ class QuotationController extends Controller
 
         $fields = [
             'companyDetails' => 'quotation_company_details',
+            'clientDetails' => 'quotation_client_details',
             'thankYouTitle' => 'quotation_thank_you_title',
             'thankYouMessage' => 'quotation_thank_you_message',
             'inclusionsTitle' => 'quotation_inclusions_title',
@@ -77,20 +80,20 @@ class QuotationController extends Controller
             }
         }
 
-        if (isset($data['inclusions'])) {
-            $sanitizedInclusions = $this->sanitizeHtml($data['inclusions']);
-            Setting::updateOrCreate(
-                ['key' => 'quotation_inclusions'],
-                ['value' => json_encode($sanitizedInclusions), 'group' => 'quotation', 'type' => 'json']
-            );
-        }
+        $jsonFields = [
+            'inclusions' => 'quotation_inclusions',
+            'terms' => 'quotation_terms',
+            'tableOptions' => 'quotation_table_options',
+        ];
 
-        if (isset($data['terms'])) {
-            $sanitizedTerms = $this->sanitizeHtml($data['terms']);
-            Setting::updateOrCreate(
-                ['key' => 'quotation_terms'],
-                ['value' => json_encode($sanitizedTerms), 'group' => 'quotation', 'type' => 'json']
-            );
+        foreach ($jsonFields as $key => $dbKey) {
+            if (isset($data[$key])) {
+                $sanitized = $this->sanitizeHtml($data[$key]);
+                Setting::updateOrCreate(
+                    ['key' => $dbKey],
+                    ['value' => json_encode($sanitized), 'group' => 'quotation', 'type' => 'json']
+                );
+            }
         }
 
         if ($request->hasFile('logo')) {
@@ -111,4 +114,5 @@ class QuotationController extends Controller
 
         return back()->with('success', 'Quotation settings saved to database.');
     }
+
 }

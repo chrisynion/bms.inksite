@@ -6,14 +6,7 @@ export default function QuotationIndex({ auth, dbSettings }) {
     const printRef = useRef();
 
     const [logo, setLogo] = useState(() => dbSettings?.logo || localStorage.getItem('quotation_logo') || '');
-    const [bgImage, setBgImage] = useState(() => {
-        try {
-            return dbSettings?.bgImage || localStorage.getItem('quotation_bgImage') || '';
-        } catch (e) {
-            localStorage.removeItem('quotation_bgImage');
-            return dbSettings?.bgImage || '';
-        }
-    });
+    const [bgImage, setBgImage] = useState(() => dbSettings?.bgImage || localStorage.getItem('quotation_bgImage') || '');
     
     // We'll use this for file uploads specifically
     const [logoFile, setLogoFile] = useState(null);
@@ -24,12 +17,13 @@ export default function QuotationIndex({ auth, dbSettings }) {
     const [formData, setFormData] = useState(() => {
         const savedData = localStorage.getItem('quotation_form_data');
         const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        
         const defaultData = {
             dateIssued: today,
             companyDetails: dbSettings?.companyDetails || `Unit #3, D "new" Inn Bldg. Burgos St, Brgy.\nVillamonte, Bacolod City\n+63 945 386 9466\nwww.inksite.ph | fb.com/inksite.ph`,
-            clientDetails: `QUOTATION FOR\n\nSIRB LAW FIRM\nSecond Floor, The Row Bldg.\nBrgy Mandalagan, Bacolod City`,
+            clientDetails: dbSettings?.clientDetails || `QUOTATION FOR\n\nSIRB LAW FIRM\nSecond Floor, The Row Bldg.\nBrgy Mandalagan, Bacolod City`,
             tableTitle: dbSettings?.tableTitle || 'OPTIONS FOR 2X7 SQFT SIGNAGE',
-            tableOptions: [
+            tableOptions: dbSettings?.tableOptions || [
                 { id: 1, description: 'Option A: Double Layer Acrylic Lighted Box', price: '₱35,000' },
                 { id: 2, description: 'Option B: Double Layer Acrylic Non-Lighted Panel', price: '₱25,000' },
                 { id: 3, description: 'Option C: Sticker on Single Layer Acrylic Lighted Box', price: '₱21,000' },
@@ -53,12 +47,36 @@ export default function QuotationIndex({ auth, dbSettings }) {
             thankYouMessage: dbSettings?.thankYouMessage || 'We appreciate the opportunity to work with you and look forward to a long-term partnership.'
         };
 
+        // Only use localStorage if we don't have server settings
         if (savedData && !dbSettings?.companyDetails) { 
             const parsed = JSON.parse(savedData);
             return { ...defaultData, ...parsed, dateIssued: today };
         }
-        return { ...defaultData, dateIssued: today };
+        return defaultData;
     });
+
+    // Update state when dbSettings changes (after a save)
+    React.useEffect(() => {
+        if (dbSettings) {
+            if (dbSettings.logo) setLogo(dbSettings.logo);
+            if (dbSettings.bgImage) setBgImage(dbSettings.bgImage);
+            
+            setFormData(prev => ({
+                ...prev,
+                companyDetails: dbSettings.companyDetails || prev.companyDetails,
+                clientDetails: dbSettings.clientDetails || prev.clientDetails,
+                thankYouTitle: dbSettings.thankYouTitle || prev.thankYouTitle,
+                thankYouMessage: dbSettings.thankYouMessage || prev.thankYouMessage,
+                inclusionsTitle: dbSettings.inclusionsTitle || prev.inclusionsTitle,
+                inclusions: dbSettings.inclusions || prev.inclusions,
+                termsTitle: dbSettings.termsTitle || prev.termsTitle,
+                terms: dbSettings.terms || prev.terms,
+                tableFooterNote: dbSettings.tableFooterNote || prev.tableFooterNote,
+                tableTitle: dbSettings.tableTitle || prev.tableTitle,
+                tableOptions: dbSettings.tableOptions || prev.tableOptions,
+            }));
+        }
+    }, [dbSettings]);
 
     // Helper for safe localStorage access
     const safeSetItem = (key, value) => {
@@ -111,7 +129,11 @@ export default function QuotationIndex({ auth, dbSettings }) {
         
         post(route('quotation.settings.update'), payload, {
             forceFormData: true,
-            onSuccess: () => alert('Settings saved to database successfully!'),
+            onSuccess: () => {
+                alert('Settings saved to system successfully! These will now be the defaults for everyone.');
+                setLogoFile(null);
+                setBgFile(null);
+            },
         });
     };
 
