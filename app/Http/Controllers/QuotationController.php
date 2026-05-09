@@ -15,8 +15,8 @@ class QuotationController extends Controller
         
         return Inertia::render('Quotation/Index', [
             'dbSettings' => [
-                'logo' => $settings->has('quotation_logo') ? asset('storage/' . $settings['quotation_logo']->value) : null,
-                'bgImage' => $settings->has('quotation_bg') ? asset('storage/' . $settings['quotation_bg']->value) : null,
+                'logo' => $settings->has('quotation_logo') ? \Storage::disk('uploads')->url('quotation/' . $settings['quotation_logo']->value) : null,
+                'bgImage' => $settings->has('quotation_bg') ? \Storage::disk('uploads')->url('quotation/' . $settings['quotation_bg']->value) : null,
                 'companyDetails' => $settings['quotation_company_details']->value ?? null,
                 'clientDetails' => $settings['quotation_client_details']->value ?? null,
                 'thankYouTitle' => $settings['quotation_thank_you_title']->value ?? null,
@@ -97,22 +97,30 @@ class QuotationController extends Controller
         }
 
         if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('quotation', 'public');
+            $file = $request->file('logo');
+            $fileName = time() . '_logo.' . $file->getClientOriginalExtension();
+            $file->storeAs('quotation', $fileName, 'uploads');
+            
             Setting::updateOrCreate(
                 ['key' => 'quotation_logo'],
-                ['value' => $path, 'group' => 'quotation', 'type' => 'string']
+                ['value' => $fileName, 'group' => 'quotation', 'type' => 'string']
             );
         }
 
         if ($request->hasFile('bgImage')) {
-            $path = $request->file('bgImage')->store('quotation', 'public');
+            $file = $request->file('bgImage');
+            $fileName = time() . '_bg.' . $file->getClientOriginalExtension();
+            $file->storeAs('quotation', $fileName, 'uploads');
+            
             Setting::updateOrCreate(
                 ['key' => 'quotation_bg'],
-                ['value' => $path, 'group' => 'quotation', 'type' => 'string']
+                ['value' => $fileName, 'group' => 'quotation', 'type' => 'string']
             );
         }
 
         return back()->with('success', 'Quotation settings saved to database.');
     }
+
+
 
 }

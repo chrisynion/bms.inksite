@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 
 export default function QuotationIndex({ auth, dbSettings }) {
     const printRef = useRef();
@@ -127,7 +127,7 @@ export default function QuotationIndex({ auth, dbSettings }) {
             bgImage: bgFile,
         };
         
-        post(route('quotation.settings.update'), payload, {
+        router.post(route('quotation.settings.update'), payload, {
             forceFormData: true,
             onSuccess: () => {
                 alert('Settings saved to system successfully! These will now be the defaults for everyone.');
