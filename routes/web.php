@@ -33,6 +33,14 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/portfolio', function () {
+    return Inertia::render('Portfolio');
+})->name('portfolio');
+
+Route::get('/resume', function () {
+    return Inertia::render('Resume');
+})->name('resume');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
