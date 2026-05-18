@@ -46,7 +46,7 @@ export default function Create({ auth }) {
             <Head title="Create Inventory" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg p-6">
                         <form onSubmit={submit} className="space-y-6 max-w-2xl">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name *</label>

@@ -93,7 +93,7 @@ export default function Edit({ auth, service, inventory_items, equipment }) {
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <form onSubmit={submit} className="space-y-6">
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                        <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg p-6">
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 border-b pb-2 dark:border-gray-700">Basic Information</h3>
                             <div className="space-y-4 max-w-2xl">
                                 <div>
@@ -171,7 +171,7 @@ export default function Edit({ auth, service, inventory_items, equipment }) {
                         </div>
 
                         {/* Labor Section */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-yellow-500">
+                        <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg p-6 border-l-4 border-yellow-500">
                             <div className="flex justify-between items-center mb-4 border-b pb-2 dark:border-gray-700">
                                 <div>
                                     <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Labor & Personnel</h3>
@@ -223,7 +223,7 @@ export default function Edit({ auth, service, inventory_items, equipment }) {
                         </div>
 
                         {/* Materials / Inventory */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                        <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg p-6">
                             <div className="flex justify-between items-center mb-4 border-b pb-2 dark:border-gray-700">
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Materials (Inventory)</h3>
                                 <button type="button" onClick={addInventory} className="text-xs px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">+ Add Material</button>
@@ -254,7 +254,7 @@ export default function Edit({ auth, service, inventory_items, equipment }) {
                         </div>
 
                         {/* Energy / Equipment */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                        <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg p-6">
                             <div className="flex justify-between items-center mb-4 border-b pb-2 dark:border-gray-700">
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Equipment Usage</h3>
                                 <button type="button" onClick={addEquipment} className="text-xs px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">+ Add Equipment</button>

@@ -1,8 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 
-export default function Dashboard({ auth, metrics = {}, recent_orders = [], low_stock_items = [], account_balances = [] }) {
-    
+export default function Dashboard({ auth, metrics = {}, recent_orders = [], low_stock_items = [], account_balances = [], top_services = [] }) {
     const formattedRevenue = '₱' + new Intl.NumberFormat('en-PH').format(metrics.current_month_revenue || 0);
 
     return (
@@ -71,6 +70,43 @@ export default function Dashboard({ auth, metrics = {}, recent_orders = [], low_
                             </div>
                         </div>
                     )}
+
+
+                    {/* Top Services Section */}
+                    <div className="mb-8">
+                        <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Top 10 Bought Services</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                            {top_services?.length > 0 ? top_services.map((item, index) => (
+                                <div key={item.service_id} className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 p-2">
+                                        <span className="text-4xl font-black text-gray-100 dark:text-gray-700/50 group-hover:text-indigo-50 dark:group-hover:text-indigo-900/20 transition-colors">#{index + 1}</span>
+                                    </div>
+                                    <div className="relative z-10">
+                                        <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">{item.orders_count} Orders</div>
+                                        <div className="text-lg font-bold text-gray-900 dark:text-white leading-tight mb-2 truncate" title={item.service?.name}>
+                                            {item.service?.name || 'Deleted Service'}
+                                        </div>
+                                        <div className="flex items-end justify-between">
+                                            <div className="text-2xl font-black text-gray-900 dark:text-white">
+                                                {parseFloat(item.total_quantity).toLocaleString()}
+                                                <span className="text-xs font-normal text-gray-500 ml-1">sold</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                                        <div 
+                                            className="bg-indigo-500 h-full rounded-full transition-all duration-1000" 
+                                            style={{ width: `${top_services[0]?.total_quantity > 0 ? (item.total_quantity / top_services[0].total_quantity) * 100 : 0}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            )) : (
+                                <div className="col-span-full py-12 text-center bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
+                                    <p className="text-gray-500">No service data available yet.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
                     {/* Bottom Area Grid */}
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">

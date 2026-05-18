@@ -55,19 +55,31 @@ export default function Index({ auth, transactions, payment_modes, filters }) {
 
     const openIncomeModal = () => {
         resetTx();
-        setTxData('type', 'income');
+        setTxData(data => ({
+            ...data,
+            type: 'income',
+            category: ''
+        }));
         setShowIncomeModal(true);
     };
 
     const openExpenseModal = () => {
         resetTx();
-        setTxData('type', 'expense');
+        setTxData(data => ({
+            ...data,
+            type: 'expense',
+            category: ''
+        }));
         setShowExpenseModal(true);
     };
 
     const openTransferModal = () => {
         resetTx();
-        setTxData('type', 'transfer');
+        setTxData(data => ({
+            ...data,
+            type: 'transfer',
+            category: 'Internal Transfer'
+        }));
         setShowTransferModal(true);
     };
 
@@ -289,10 +301,7 @@ export default function Index({ auth, transactions, payment_modes, filters }) {
                                 </select>
                             </div>
                         </div>
-                        <div className="hidden">
-                            {/* Hidden category for transfers */}
-                            <input type="hidden" value={txData.category = 'Internal Transfer'} />
-                        </div>
+                        {/* Category is managed via state initialization in openTransferModal */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
                             <input type="date" value={txData.transaction_date} onChange={e => setTxData('transaction_date', e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-white" />

@@ -131,7 +131,7 @@ export default function Create({ auth, customers, employees, services, payment_m
                     <form onSubmit={submit} className="space-y-6">
                         
                         {/* Master Order Info */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm flex flex-col sm:rounded-lg p-6 border border-gray-100 dark:border-gray-700">
+                        <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm flex flex-col sm:rounded-lg p-6 border border-gray-100 dark:border-gray-700">
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 border-b pb-2 dark:border-gray-700">Order Details</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
@@ -268,7 +268,7 @@ export default function Create({ auth, customers, employees, services, payment_m
                         </div>
 
                         {/* Order Items */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm flex flex-col sm:rounded-lg p-6 border border-gray-100 dark:border-gray-700">
+                        <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm flex flex-col sm:rounded-lg p-6 border border-gray-100 dark:border-gray-700">
                             <div className="flex justify-between items-center mb-4 border-b pb-2 dark:border-gray-700">
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Line Items</h3>
                                 <button type="button" onClick={addItem} className="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition">
@@ -285,6 +285,7 @@ export default function Create({ auth, customers, employees, services, payment_m
                                                 <div 
                                                     key={item._key} 
                                                     className={`relative ${index % 2 === 0 ? 'bg-white dark:bg-gray-800/50' : 'bg-gray-50/80 dark:bg-gray-900/50'} p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-all duration-500 shadow-sm hover:shadow-md ${isDeleting ? 'opacity-0 -translate-x-8 scale-95 pointer-events-none' : 'opacity-100'}`}
+                                                    style={{ zIndex: data.items.length - index }}
                                                 >
                                                     {isDeleting && (
                                                         <div className="absolute inset-0 bg-red-50/50 dark:bg-red-900/10 flex items-center justify-center backdrop-blur-[1px] z-10 rounded-lg">

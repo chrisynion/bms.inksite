@@ -20,7 +20,7 @@ class Order extends Model
     }
 
     public function employee() {
-        return $this->belongsTo(Employee::class, 'assigned_to');
+        return $this->belongsTo(Employee::class, 'assigned_to')->withTrashed();
     }
 
     public function items() {

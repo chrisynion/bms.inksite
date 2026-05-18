@@ -45,7 +45,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('invoices', InvoiceController::class);
     Route::resource('payments', PaymentController::class);
     Route::resource('customers', CustomerController::class);
-    Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'destroy']);
     Route::get('quotation', [\App\Http\Controllers\QuotationController::class, 'index'])->name('quotation.index');
     Route::post('quotation/settings', [\App\Http\Controllers\QuotationController::class, 'updateSettings'])->name('quotation.settings.update');
     
@@ -56,6 +55,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('employee-overtimes/{overtime}', [EmployeeOvertimeController::class, 'destroy'])->name('employee-overtimes.destroy');
     
     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
+        Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'destroy']);
         Route::resource('employees', EmployeeController::class);
         Route::resource('equipment', EquipmentController::class);
         Route::resource('suppliers', SupplierController::class);

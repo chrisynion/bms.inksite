@@ -93,6 +93,17 @@ class DashboardController extends Controller
             }
         }
 
+        $topServices = \App\Models\OrderItem::whereHas('order', function($q) {
+                $q->where('status', '!=', 'cancelled');
+            })
+            ->whereNotNull('service_id')
+            ->with('service')
+            ->selectRaw('service_id, COUNT(*) as orders_count, SUM(quantity) as total_quantity')
+            ->groupBy('service_id')
+            ->orderByDesc('total_quantity')
+            ->take(10)
+            ->get();
+
         return Inertia::render('Dashboard', [
             'metrics' => [
                 'current_month_revenue' => $currentMonthRevenue,
@@ -103,6 +114,7 @@ class DashboardController extends Controller
             'recent_orders' => $recentOrders,
             'low_stock_items' => $lowStockItems,
             'account_balances' => array_values($accountBalances),
+            'top_services' => $topServices,
         ]);
     }
 }
