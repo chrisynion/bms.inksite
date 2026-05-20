@@ -23,7 +23,7 @@ export default function Welcome({ auth }) {
                         {auth.user ? (
                             <Link
                                 href={route('dashboard')}
-                                className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-500/50 transition-all duration-300 min-w-[140px] text-center"
+                                className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-500/50 transition-all duration-300"
                             >
                                 Enter Dashboard
                             </Link>
@@ -43,12 +43,6 @@ export default function Welcome({ auth }) {
                                 </Link>
                             </>
                         )}
-                        <Link
-                            href={route('portfolio')}
-                            className="px-10 py-3 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 font-semibold rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-all duration-300 min-w-[140px] text-center"
-                        >
-                            Developer Portfolio
-                        </Link>
                     </div>
                 </div>
 
