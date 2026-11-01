@@ -11,16 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('service_labor', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('service_id')->constrained('services')->onDelete('cascade');
-            $table->enum('worker_type', ['employee', 'contractor'])->default('employee'); // employee, contractor
-            $table->string('work_type')->nullable(); // e.g. "Layout", "Printing", "Finishing"
-            $table->string('rate_type')->default('fixed'); // fixed, hourly
-            $table->decimal('rate', 10, 2)->default(0);
-            $table->decimal('hours', 8, 2)->default(1);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('service_labor')) {
+            Schema::create('service_labor', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('service_id')->constrained('services')->onDelete('cascade');
+                $table->enum('worker_type', ['employee', 'contractor'])->default('employee'); // employee, contractor
+                $table->string('work_type')->nullable(); // e.g. "Layout", "Printing", "Finishing"
+                $table->string('rate_type')->default('fixed'); // fixed, hourly
+                $table->decimal('rate', 10, 2)->default(0);
+                $table->decimal('hours', 8, 2)->default(1);
+                $table->timestamps();
+            });
+        }
     }
 
     /**

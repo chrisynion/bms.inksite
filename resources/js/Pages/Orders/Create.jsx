@@ -21,7 +21,7 @@ export default function Create({ auth, customers, employees, services, payment_m
     const { data, setData, post, processing, errors } = useForm({
         customer_id: '',
         assigned_to: '',
-        due_date: '',
+        order_date: new Date().toISOString().split('T')[0],
         status: 'pending',
         order_total: 0,
         payment_status: 'unpaid',
@@ -160,9 +160,9 @@ export default function Create({ auth, customers, employees, services, payment_m
                                     {errors.assigned_to && <div className="text-red-500 mt-1 text-sm">{errors.assigned_to}</div>}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Due Date</label>
-                                    <input type="date" value={data.due_date} onChange={e => setData('due_date', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
-                                    {errors.due_date && <div className="text-red-500 mt-1 text-sm">{errors.due_date}</div>}
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Order Date</label>
+                                    <input type="date" value={data.order_date} onChange={e => setData('order_date', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
+                                    {errors.order_date && <div className="text-red-500 mt-1 text-sm">{errors.order_date}</div>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Order Status *</label>

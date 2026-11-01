@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import SearchableSelect from '@/Components/SearchableSelect';
 
 const PRESET_SIZES = [
@@ -19,7 +20,7 @@ export default function Edit({ auth, order, customers, employees, services, paym
     const { data, setData, put, processing, errors } = useForm({
         customer_id: order.customer_id || '',
         assigned_to: order.assigned_to || '',
-        due_date: order.due_date || '',
+        order_date: order.order_date ? (typeof order.order_date === 'string' ? order.order_date.split('T')[0] : order.order_date) : '',
         status: order.status || 'pending',
         order_total: order.order_total || 0,
         payment_status: order.payment_status || 'unpaid',
@@ -38,6 +39,37 @@ export default function Edit({ auth, order, customers, employees, services, paym
             ? order.items.map((i, idx) => ({...i, _key: i.id || `init-${idx}`, width: i.width || '', height: i.height || ''})) 
             : [{ _key: 'init-0', id: null, service_id: '', description: '', quantity: 1, unit_price: 0, width: '', height: '' }]
     });
+
+    const [showQuickCustomer, setShowQuickCustomer] = useState(false);
+    const [quickCust, setQuickCust] = useState({ name: '', phone: '' });
+    const [quickErrors, setQuickErrors] = useState({});
+    const [savingCust, setSavingCust] = useState(false);
+
+    const handleQuickCustomer = async (e) => {
+        e.preventDefault();
+        setSavingCust(true);
+        setQuickErrors({});
+        try {
+            const response = await axios.post(route('customers.store'), quickCust);
+            const newCust = response.data;
+
+            // After successful creation, we need to refresh the customers list.
+            router.reload({ 
+                only: ['customers'],
+                onSuccess: () => {
+                    setData('customer_id', newCust.id);
+                    setSavingCust(false);
+                    setShowQuickCustomer(false);
+                    setQuickCust({ name: '', phone: '' });
+                }
+            });
+        } catch (err) {
+            setSavingCust(false);
+            if (err.response?.data?.errors) {
+                setQuickErrors(err.response.data.errors);
+            }
+        }
+    };
 
     const calculateTotal = (items) => {
         return items.reduce((sum, item) => {
@@ -120,7 +152,10 @@ export default function Edit({ auth, order, customers, employees, services, paym
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 border-b pb-2 dark:border-gray-700">Order Details</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer *</label>
+                                    <div className="flex justify-between items-center">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer *</label>
+                                        <button type="button" onClick={() => setShowQuickCustomer(true)} className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium">+ Quick Add</button>
+                                    </div>
                                     <SearchableSelect 
                                         options={customers.map(c => ({ 
                                             id: c.id, 
@@ -142,9 +177,9 @@ export default function Edit({ auth, order, customers, employees, services, paym
                                     {errors.assigned_to && <div className="text-red-500 mt-1 text-sm">{errors.assigned_to}</div>}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Due Date</label>
-                                    <input type="date" value={data.due_date} onChange={e => setData('due_date', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
-                                    {errors.due_date && <div className="text-red-500 mt-1 text-sm">{errors.due_date}</div>}
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Order Date</label>
+                                    <input type="date" value={data.order_date} onChange={e => setData('order_date', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" />
+                                    {errors.order_date && <div className="text-red-500 mt-1 text-sm">{errors.order_date}</div>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Order Status *</label>
@@ -175,6 +210,12 @@ export default function Edit({ auth, order, customers, employees, services, paym
                                         <option value="partial">Partial / Deposit Paid</option>
                                         <option value="paid">Fully Paid</option>
                                     </select>
+                                    {order.fully_paid_at && (
+                                        <p className="mt-1.5 text-xs text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
+                                            <svg className="w-3.5 h-3.5 inline text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                            Fully Paid: {new Date(order.fully_paid_at).toLocaleDateString()} {new Date(order.fully_paid_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </p>
+                                    )}
                                 </div>
                                 {data.payment_status !== 'unpaid' && (
                                     <div className="md:col-span-3 border-t pt-4 mt-2 dark:border-gray-700">
@@ -364,6 +405,33 @@ export default function Edit({ auth, order, customers, employees, services, paym
                     </form>
                 </div>
             </div>
+
+            {/* Quick Customer Modal */}
+            {showQuickCustomer && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 animate-fade-in">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Quick Add Customer</h3>
+                        <form onSubmit={handleQuickCustomer} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name *</label>
+                                <input type="text" value={quickCust.name} onChange={e => setQuickCust({...quickCust, name: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 shadow-sm" required autoFocus />
+                                {quickErrors.name && <div className="text-red-500 text-xs mt-1">{quickErrors.name[0]}</div>}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                                <input type="text" value={quickCust.phone} onChange={e => setQuickCust({...quickCust, phone: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 shadow-sm" />
+                                {quickErrors.phone && <div className="text-red-500 text-xs mt-1">{quickErrors.phone[0]}</div>}
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button type="button" onClick={() => setShowQuickCustomer(false)} className="px-4 py-2 text-gray-600 dark:text-gray-400 font-medium">Cancel</button>
+                                <button type="submit" disabled={savingCust} className="px-4 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 transition disabled:opacity-50">
+                                    {savingCust ? 'Adding...' : 'Save & Select'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }

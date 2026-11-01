@@ -37,7 +37,7 @@ class OrderController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'assigned_to' => 'nullable|exists:employees,id',
-            'due_date' => 'nullable|date',
+            'order_date' => 'nullable|date',
             'status' => 'required|string',
             'order_total' => 'nullable|numeric|min:0',
             'payment_status' => 'required|string',
@@ -65,15 +65,18 @@ class OrderController extends Controller
             }
         }
 
+        $isFullyPaid = ($validated['payment_status'] === 'paid');
+
         $order = Order::create([
             'order_number' => $validated['order_number'],
             'customer_id' => $validated['customer_id'],
             'assigned_to' => $validated['assigned_to'],
-            'due_date' => $validated['due_date'],
+            'order_date' => $validated['order_date'] ?? now()->toDateString(),
             'status' => $validated['status'],
             'order_total' => $validated['order_total'],
             'payment_status' => $validated['payment_status'],
             'payment_amount' => $paymentAmount,
+            'fully_paid_at' => $isFullyPaid ? now() : null,
             'order_notes' => $validated['order_notes'],
         ]);
 
@@ -127,7 +130,7 @@ class OrderController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'assigned_to' => 'nullable|exists:employees,id',
-            'due_date' => 'nullable|date',
+            'order_date' => 'nullable|date',
             'status' => 'required|string',
             'order_total' => 'nullable|numeric|min:0',
             'payment_status' => 'required|string',
@@ -155,14 +158,18 @@ class OrderController extends Controller
             }
         }
 
+        $isFullyPaid = ($validated['payment_status'] === 'paid');
+        $fullyPaidAt = $isFullyPaid ? ($order->fully_paid_at ?? now()) : null;
+
         $order->update([
             'customer_id' => $validated['customer_id'],
             'assigned_to' => $validated['assigned_to'],
-            'due_date' => $validated['due_date'],
+            'order_date' => $validated['order_date'] ?? ($order->order_date ?? now()->toDateString()),
             'status' => $validated['status'],
             'order_total' => $validated['order_total'],
             'payment_status' => $validated['payment_status'],
             'payment_amount' => $paymentAmount,
+            'fully_paid_at' => $fullyPaidAt,
             'order_notes' => $validated['order_notes'],
         ]);
 

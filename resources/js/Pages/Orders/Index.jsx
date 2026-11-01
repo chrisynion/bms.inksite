@@ -38,7 +38,7 @@ export default function Index({ auth, orders }) {
                                     <tr>
                                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order #</th>
                                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
-                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Due Date</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order Date</th>
                                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Payment</th>
                                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</th>
@@ -61,7 +61,7 @@ export default function Index({ auth, orders }) {
                                                     <div className="text-xs text-gray-500 dark:text-gray-400">{item.customer?.company_name}</div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                    {item.due_date ? new Date(item.due_date).toLocaleDateString() : 'N/A'}
+                                                    {item.order_date ? new Date(item.order_date).toLocaleDateString() : 'N/A'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full shadow-sm ${getStatusColor(item.status)}`}>
@@ -73,6 +73,11 @@ export default function Index({ auth, orders }) {
                                                         <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full shadow-sm w-fit ${item.payment_status === 'paid' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : item.payment_status === 'partial' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
                                                             {item.payment_status.toUpperCase()}
                                                         </span>
+                                                        {item.payment_status === 'paid' && item.fully_paid_at && (
+                                                            <span className="text-[10px] text-green-700 dark:text-green-400 font-medium tracking-tight mt-1">
+                                                                Paid: {new Date(item.fully_paid_at).toLocaleDateString()} {new Date(item.fully_paid_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                        )}
                                                         {item.payment_status === 'partial' && (
                                                             <div className="mt-1 flex flex-col">
                                                                 <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium tracking-tight">Paid: ₱{parseFloat(item.payment_amount || 0).toFixed(2)}</span>

@@ -10,7 +10,8 @@ class Order extends Model
     
     protected $casts = [
         'tags' => 'array',
-        'due_date' => 'date',
+        'order_date' => 'date',
+        'fully_paid_at' => 'datetime',
         'payment_date' => 'date',
         'inventory_deducted' => 'boolean',
     ];

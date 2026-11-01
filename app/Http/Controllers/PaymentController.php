@@ -27,11 +27,17 @@ class PaymentController extends Controller
         if ($totalPaid >= $invoice->total_amount) {
             $invoice->update(['status' => 'paid']);
             if ($invoice->order) {
-                $invoice->order->update(['payment_status' => 'paid']);
+                $invoice->order->update([
+                    'payment_status' => 'paid',
+                    'fully_paid_at' => $invoice->order->fully_paid_at ?? now(),
+                ]);
             }
         } elseif ($totalPaid > 0) {
             if ($invoice->order) {
-                $invoice->order->update(['payment_status' => 'partial']);
+                $invoice->order->update([
+                    'payment_status' => 'partial',
+                    'fully_paid_at' => null,
+                ]);
             }
         }
 
@@ -48,12 +54,18 @@ class PaymentController extends Controller
         if ($totalPaid < $invoice->total_amount && $totalPaid > 0) {
             $invoice->update(['status' => 'sent']);
             if ($invoice->order) {
-                $invoice->order->update(['payment_status' => 'partial']);
+                $invoice->order->update([
+                    'payment_status' => 'partial',
+                    'fully_paid_at' => null,
+                ]);
             }
         } elseif ($totalPaid <= 0) {
             $invoice->update(['status' => 'sent']);
             if ($invoice->order) {
-                $invoice->order->update(['payment_status' => 'unpaid']);
+                $invoice->order->update([
+                    'payment_status' => 'unpaid',
+                    'fully_paid_at' => null,
+                ]);
             }
         }
         

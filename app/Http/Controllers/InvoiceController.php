@@ -66,7 +66,15 @@ class InvoiceController extends Controller
         $invoice->update($validated);
         
         if ($validated['status'] == 'paid' && $invoice->order) {
-            $invoice->order->update(['payment_status' => 'paid']);
+            $invoice->order->update([
+                'payment_status' => 'paid',
+                'fully_paid_at' => $invoice->order->fully_paid_at ?? now(),
+            ]);
+        } elseif ($invoice->order && $invoice->order->payment_status === 'paid') {
+            $invoice->order->update([
+                'payment_status' => $validated['status'] === 'partial' ? 'partial' : 'unpaid',
+                'fully_paid_at' => null,
+            ]);
         }
         
         return back()->with('success', 'Invoice updated.');
