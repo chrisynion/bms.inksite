@@ -57,7 +57,7 @@ export default function Dashboard({ auth, metrics = {}, recent_orders = [], low_
                     </div>
 
                     {/* Account Balances Section */}
-                    {account_balances?.length > 0 && (
+                    {auth.user?.role === 'admin' && account_balances?.length > 0 && (
                         <div className="mb-8">
                             <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Account Balances</h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

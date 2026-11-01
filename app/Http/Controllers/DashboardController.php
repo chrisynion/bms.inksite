@@ -11,7 +11,7 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $now = Carbon::now();
         $startOfMonth = $now->copy()->startOfMonth();
@@ -44,52 +44,54 @@ class DashboardController extends Controller
             ->take(8)
             ->get();
 
-        // 7. Account Balances
-        $settings = \App\Models\Setting::where('key', 'payment_modes')->first();
-        $paymentModes = $settings ? json_decode($settings->value, true) : [];
+        // 7. Account Balances (Only available for admin)
         $accountBalances = [];
-        
-        if (is_array($paymentModes)) {
-            foreach ($paymentModes as $mode) {
-                $name = is_array($mode) && isset($mode['name']) ? $mode['name'] : (is_string($mode) ? $mode : 'Unknown');
-                $initial = is_array($mode) && isset($mode['initial_amount']) ? (float)$mode['initial_amount'] : 0;
-                $accountBalances[$name] = [
-                    'name' => $name,
-                    'balance' => $initial
-                ];
+        if ($request->user() && $request->user()->role === 'admin') {
+            $settings = \App\Models\Setting::where('key', 'payment_modes')->first();
+            $paymentModes = $settings ? json_decode($settings->value, true) : [];
+            
+            if (is_array($paymentModes)) {
+                foreach ($paymentModes as $mode) {
+                    $name = is_array($mode) && isset($mode['name']) ? $mode['name'] : (is_string($mode) ? $mode : 'Unknown');
+                    $initial = is_array($mode) && isset($mode['initial_amount']) ? (float)$mode['initial_amount'] : 0;
+                    $accountBalances[$name] = [
+                        'name' => $name,
+                        'balance' => $initial
+                    ];
+                }
             }
-        }
 
-        $payments = \App\Models\OrderPayment::whereHas('order', function($q) {
-                $q->where('status', '!=', 'cancelled');
-            })
-            ->selectRaw('payment_mode, SUM(amount) as total')
-            ->groupBy('payment_mode')
-            ->get();
+            $payments = \App\Models\OrderPayment::whereHas('order', function($q) {
+                    $q->where('status', '!=', 'cancelled');
+                })
+                ->selectRaw('payment_mode, SUM(amount) as total')
+                ->groupBy('payment_mode')
+                ->get();
 
-        foreach ($payments as $payment) {
-            if (isset($accountBalances[$payment->payment_mode])) {
-                $accountBalances[$payment->payment_mode]['balance'] += (float)$payment->total;
-            } else {
-                $accountBalances[$payment->payment_mode] = [
-                    'name' => $payment->payment_mode,
-                    'balance' => (float)$payment->total
-                ];
+            foreach ($payments as $payment) {
+                if (isset($accountBalances[$payment->payment_mode])) {
+                    $accountBalances[$payment->payment_mode]['balance'] += (float)$payment->total;
+                } else {
+                    $accountBalances[$payment->payment_mode] = [
+                        'name' => $payment->payment_mode,
+                        'balance' => (float)$payment->total
+                    ];
+                }
             }
-        }
 
-        $ledgerTransactions = \App\Models\Transaction::selectRaw('payment_mode, SUM(amount) as total')
-            ->groupBy('payment_mode')
-            ->get();
+            $ledgerTransactions = \App\Models\Transaction::selectRaw('payment_mode, SUM(amount) as total')
+                ->groupBy('payment_mode')
+                ->get();
 
-        foreach ($ledgerTransactions as $tx) {
-            if (isset($accountBalances[$tx->payment_mode])) {
-                $accountBalances[$tx->payment_mode]['balance'] += (float)$tx->total;
-            } else {
-                $accountBalances[$tx->payment_mode] = [
-                    'name' => $tx->payment_mode,
-                    'balance' => (float)$tx->total
-                ];
+            foreach ($ledgerTransactions as $tx) {
+                if (isset($accountBalances[$tx->payment_mode])) {
+                    $accountBalances[$tx->payment_mode]['balance'] += (float)$tx->total;
+                } else {
+                    $accountBalances[$tx->payment_mode] = [
+                        'name' => $tx->payment_mode,
+                        'balance' => (float)$tx->total
+                    ];
+                }
             }
         }
 
