@@ -37,7 +37,7 @@ export default function Index({ auth, orders }) {
                                 <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                                     <tr>
                                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order #</th>
-                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
+                                        <th className="w-48 max-w-[12rem] px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
                                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order Date</th>
                                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Payment</th>
@@ -56,9 +56,9 @@ export default function Index({ auth, orders }) {
                                                 <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-600 dark:text-blue-400">
                                                     <Link href={route('orders.edit', item.id)}>{item.order_number}</Link>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                     <div className="text-sm font-medium text-gray-900 dark:text-white">{item.customer?.name}</div>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{item.customer?.company_name}</div>
+                                                <td className="w-48 max-w-[12rem] px-6 py-4 whitespace-nowrap">
+                                                     <div className="text-sm font-medium text-gray-900 dark:text-white truncate" title={item.customer?.name}>{item.customer?.name}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate" title={item.customer?.company_name}>{item.customer?.company_name}</div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                     {item.order_date ? new Date(item.order_date).toLocaleDateString() : 'N/A'}
@@ -75,7 +75,7 @@ export default function Index({ auth, orders }) {
                                                         </span>
                                                         {item.payment_status === 'paid' && item.fully_paid_at && (
                                                             <span className="text-[10px] text-green-700 dark:text-green-400 font-medium tracking-tight mt-1">
-                                                                Paid: {new Date(item.fully_paid_at).toLocaleDateString()} {new Date(item.fully_paid_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                {new Date(item.fully_paid_at).toLocaleDateString()} {new Date(item.fully_paid_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                             </span>
                                                         )}
                                                         {item.payment_status === 'partial' && (
