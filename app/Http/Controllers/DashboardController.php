@@ -110,13 +110,18 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
+        $metrics = [
+            'pending_orders_count' => $pendingOrdersCount,
+            'active_orders_count' => $activeOrdersCount,
+            'total_customers' => $totalCustomers,
+        ];
+
+        if ($isAdmin) {
+            $metrics['current_month_revenue'] = $currentMonthRevenue;
+        }
+
         return Inertia::render('Dashboard', [
-            'metrics' => [
-                'current_month_revenue' => $currentMonthRevenue,
-                'pending_orders_count' => $pendingOrdersCount,
-                'active_orders_count' => $activeOrdersCount,
-                'total_customers' => $totalCustomers,
-            ],
+            'metrics' => $metrics,
             'recent_orders' => $recentOrders,
             'low_stock_items' => $lowStockItems,
             'account_balances' => array_values($accountBalances),

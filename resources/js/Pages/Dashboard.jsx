@@ -2,7 +2,10 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 
 export default function Dashboard({ auth, metrics = {}, recent_orders = [], low_stock_items = [], account_balances = [], top_services = [] }) {
-    const formattedRevenue = '₱' + new Intl.NumberFormat('en-PH').format(metrics.current_month_revenue || 0);
+    const isAdmin = auth.user?.role?.toLowerCase() === 'admin';
+    const formattedRevenue = isAdmin && metrics.current_month_revenue !== undefined && metrics.current_month_revenue !== null
+        ? '₱' + new Intl.NumberFormat('en-PH').format(metrics.current_month_revenue)
+        : null;
 
     return (
         <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-2xl text-gray-800 dark:text-gray-200 leading-tight">Dashboard Overview</h2>}>
@@ -18,9 +21,9 @@ export default function Dashboard({ auth, metrics = {}, recent_orders = [], low_
                     </div>
 
                     {/* KPI Cards Grid */}
-                    <div className={`grid grid-cols-1 md:grid-cols-2 ${auth.user?.role === 'admin' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-6 mb-8`}>
+                    <div className={`grid grid-cols-1 md:grid-cols-2 ${isAdmin ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-6 mb-8`}>
                         {/* Revenue Card (Admin Only) */}
-                        {auth.user?.role === 'admin' && (
+                        {isAdmin && formattedRevenue !== null && (
                             <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 shadow-lg shadow-indigo-200 dark:shadow-none text-white relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
                                 <div className="relative z-10">
                                     <p className="text-indigo-100 font-semibold uppercase tracking-wider text-xs mb-1">Monthly Gross Income</p>
