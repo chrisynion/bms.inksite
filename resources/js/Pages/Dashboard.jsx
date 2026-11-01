@@ -18,15 +18,17 @@ export default function Dashboard({ auth, metrics = {}, recent_orders = [], low_
                     </div>
 
                     {/* KPI Cards Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        {/* Revenue Card */}
-                        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 shadow-lg shadow-indigo-200 dark:shadow-none text-white relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
-                            <div className="relative z-10">
-                                <p className="text-indigo-100 font-semibold uppercase tracking-wider text-xs mb-1">Monthly Gross Income</p>
-                                <h4 className="text-3xl font-black">{formattedRevenue}</h4>
+                    <div className={`grid grid-cols-1 md:grid-cols-2 ${auth.user?.role === 'admin' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-6 mb-8`}>
+                        {/* Revenue Card (Admin Only) */}
+                        {auth.user?.role === 'admin' && (
+                            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 shadow-lg shadow-indigo-200 dark:shadow-none text-white relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+                                <div className="relative z-10">
+                                    <p className="text-indigo-100 font-semibold uppercase tracking-wider text-xs mb-1">Monthly Gross Income</p>
+                                    <h4 className="text-3xl font-black">{formattedRevenue}</h4>
+                                </div>
+                                <svg className="absolute -right-4 -bottom-4 w-32 h-32 text-white/10 group-hover:scale-110 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" transform="rotate(-90 12 12)" /></svg>
                             </div>
-                            <svg className="absolute -right-4 -bottom-4 w-32 h-32 text-white/10 group-hover:scale-110 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" transform="rotate(-90 12 12)" /></svg>
-                        </div>
+                        )}
 
                         {/* Active Orders Card */}
                         <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-6 shadow-lg shadow-blue-200 dark:shadow-none text-white relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">

@@ -15,13 +15,17 @@ class DashboardController extends Controller
     {
         $now = Carbon::now();
         $startOfMonth = $now->copy()->startOfMonth();
+        $isAdmin = $request->user() && $request->user()->role === 'admin';
 
-        // 1. Current Month Actual Income (Total cash received this month for non-cancelled orders)
-        $currentMonthRevenue = \App\Models\OrderPayment::whereHas('order', function($q) {
-                $q->where('status', '!=', 'cancelled');
-            })
-            ->whereBetween('payment_date', [$startOfMonth->toDateString(), $now->toDateString()])
-            ->sum('amount');
+        // 1. Current Month Actual Income (Admin only - Total cash received this month for non-cancelled orders)
+        $currentMonthRevenue = 0;
+        if ($isAdmin) {
+            $currentMonthRevenue = \App\Models\OrderPayment::whereHas('order', function($q) {
+                    $q->where('status', '!=', 'cancelled');
+                })
+                ->whereBetween('payment_date', [$startOfMonth->toDateString(), $now->toDateString()])
+                ->sum('amount');
+        }
 
         // 2. Pending Orders Count (Pending Approval & Quote)
         $pendingOrdersCount = Order::whereIn('status', ['quote', 'pending'])->count();
@@ -46,7 +50,7 @@ class DashboardController extends Controller
 
         // 7. Account Balances (Only available for admin)
         $accountBalances = [];
-        if ($request->user() && $request->user()->role === 'admin') {
+        if ($isAdmin) {
             $settings = \App\Models\Setting::where('key', 'payment_modes')->first();
             $paymentModes = $settings ? json_decode($settings->value, true) : [];
             
