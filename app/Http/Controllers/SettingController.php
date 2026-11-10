@@ -25,6 +25,16 @@ class SettingController extends Controller
             ])];
         }
 
+        if (!$settings->has('ai_provider')) {
+            $settings['ai_provider'] = (object) ['key' => 'ai_provider', 'value' => env('AI_PROVIDER', 'gemini')];
+        }
+        if (!$settings->has('gemini_model')) {
+            $settings['gemini_model'] = (object) ['key' => 'gemini_model', 'value' => env('GEMINI_MODEL', 'gemini-2.5-flash')];
+        }
+        if (!$settings->has('anthropic_model')) {
+            $settings['anthropic_model'] = (object) ['key' => 'anthropic_model', 'value' => env('ANTHROPIC_MODEL', 'claude-sonnet-4-5')];
+        }
+
         return Inertia::render('Settings/Index', [
             'settings' => $settings
         ]);
@@ -38,6 +48,11 @@ class SettingController extends Controller
             'payment_modes' => 'required|array|min:1',
             'payment_modes.*.name' => 'required|string|max:255',
             'payment_modes.*.initial_amount' => 'required|numeric|min:0',
+            'ai_provider' => 'nullable|in:gemini,claude',
+            'gemini_api_key' => 'nullable|string|max:500',
+            'gemini_model' => 'nullable|string|max:100',
+            'anthropic_api_key' => 'nullable|string|max:500',
+            'anthropic_model' => 'nullable|string|max:100',
         ]);
 
         Setting::updateOrCreate(
@@ -49,6 +64,41 @@ class SettingController extends Controller
             ['key' => 'payment_modes'],
             ['value' => json_encode($validated['payment_modes']), 'type' => 'json', 'group' => 'general']
         );
+
+        if (!empty($validated['ai_provider'])) {
+            Setting::updateOrCreate(
+                ['key' => 'ai_provider'],
+                ['value' => $validated['ai_provider'], 'type' => 'string', 'group' => 'ai']
+            );
+        }
+
+        if ($request->exists('gemini_api_key') && $validated['gemini_api_key'] !== null) {
+            Setting::updateOrCreate(
+                ['key' => 'gemini_api_key'],
+                ['value' => $validated['gemini_api_key'], 'type' => 'string', 'group' => 'ai']
+            );
+        }
+
+        if (!empty($validated['gemini_model'])) {
+            Setting::updateOrCreate(
+                ['key' => 'gemini_model'],
+                ['value' => $validated['gemini_model'], 'type' => 'string', 'group' => 'ai']
+            );
+        }
+
+        if ($request->exists('anthropic_api_key') && $validated['anthropic_api_key'] !== null) {
+            Setting::updateOrCreate(
+                ['key' => 'anthropic_api_key'],
+                ['value' => $validated['anthropic_api_key'], 'type' => 'string', 'group' => 'ai']
+            );
+        }
+
+        if (!empty($validated['anthropic_model'])) {
+            Setting::updateOrCreate(
+                ['key' => 'anthropic_model'],
+                ['value' => $validated['anthropic_model'], 'type' => 'string', 'group' => 'ai']
+            );
+        }
 
         if ($request->hasFile('logo')) {
             $path = $request->file('logo')->store('logos', 'uploads');

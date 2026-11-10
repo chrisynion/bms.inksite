@@ -18,6 +18,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ContractorController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -63,6 +64,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('employee-overtimes/{overtime}', [EmployeeOvertimeController::class, 'destroy'])->name('employee-overtimes.destroy');
     
     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::post('reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
         Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'destroy']);
         Route::resource('employees', EmployeeController::class);
         Route::resource('equipment', EquipmentController::class);

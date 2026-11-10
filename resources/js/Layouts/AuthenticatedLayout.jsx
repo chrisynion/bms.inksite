@@ -1,4 +1,5 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import AiChatWidget from '@/Components/AiChatWidget';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
@@ -37,9 +38,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                     Invoices
                                 </NavLink>
                                 {user.role === 'admin' && (
-                                    <NavLink href={route('transactions.index')} active={route().current('transactions.*')}>
-                                        Cashbook
-                                    </NavLink>
+                                    <>
+                                        <NavLink href={route('transactions.index')} active={route().current('transactions.*')}>
+                                            Cashbook
+                                        </NavLink>
+                                        <NavLink href={route('reports.index')} active={route().current('reports.*')}>
+                                            AI Reports
+                                        </NavLink>
+                                    </>
                                 )}
                                 <NavLink href={route('quotation.index')} active={route().current('quotation.*')}>
                                     Quotation
@@ -227,12 +233,20 @@ export default function AuthenticatedLayout({ header, children }) {
                             Customers
                         </ResponsiveNavLink>
                         {user.role === 'admin' && (
-                            <ResponsiveNavLink
-                                href={route('transactions.index')}
-                                active={route().current('transactions.*')}
-                            >
-                                Cashbook
-                            </ResponsiveNavLink>
+                            <>
+                                <ResponsiveNavLink
+                                    href={route('transactions.index')}
+                                    active={route().current('transactions.*')}
+                                >
+                                    Cashbook
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('reports.index')}
+                                    active={route().current('reports.*')}
+                                >
+                                    AI Reports
+                                </ResponsiveNavLink>
+                            </>
                         )}
                         {user.role === 'admin' && (
                             <>
@@ -311,6 +325,7 @@ export default function AuthenticatedLayout({ header, children }) {
             )}
 
             <main>{children}</main>
+            {user.role === 'admin' && <AiChatWidget />}
         </div>
     );
 }

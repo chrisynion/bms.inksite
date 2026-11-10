@@ -6,6 +6,11 @@ export default function Index({ auth, settings }) {
         overtime_multiplier: settings.overtime_multiplier?.value || '1.30',
         payment_modes: settings.payment_modes?.value ? JSON.parse(settings.payment_modes.value) : [{name: 'Cash', initial_amount: 0}, {name: 'GCash', initial_amount: 0}, {name: 'Bank Transfer', initial_amount: 0}],
         logo: null,
+        ai_provider: settings.ai_provider?.value || 'gemini',
+        gemini_api_key: settings.gemini_api_key?.value || '',
+        gemini_model: settings.gemini_model?.value || 'gemini-2.5-flash',
+        anthropic_api_key: settings.anthropic_api_key?.value || '',
+        anthropic_model: settings.anthropic_model?.value || 'claude-sonnet-4-5',
     });
 
     const submit = (e) => {
@@ -89,6 +94,75 @@ export default function Index({ auth, settings }) {
                                         + Add Payment Mode
                                     </button>
                                     {errors.payment_modes && <div className="text-red-500 text-xs mt-1">{errors.payment_modes}</div>}
+                                </div>
+                            </div>
+
+                            <div className="mt-8 border-t pt-6 dark:border-gray-700">
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">AI Reporting (Gemini & Claude)</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                    Configure your preferred AI model for in-app executive reports. You can also connect Claude Desktop or Antigravity via MCP without an API key using <code>php artisan mcp:serve</code>.
+                                </p>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Default AI Provider</label>
+                                        <select
+                                            value={data.ai_provider}
+                                            onChange={e => setData('ai_provider', e.target.value)}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-900 dark:border-gray-600 dark:text-white"
+                                        >
+                                            <option value="gemini">Google Gemini</option>
+                                            <option value="claude">Anthropic Claude</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="p-4 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 space-y-3">
+                                        <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Google Gemini Settings</h4>
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-500 mb-1">Gemini API Key</label>
+                                            <input
+                                                type="password"
+                                                value={data.gemini_api_key}
+                                                onChange={e => setData('gemini_api_key', e.target.value)}
+                                                placeholder="AIzaSy..."
+                                                className="w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white sm:text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-500 mb-1">Gemini Model</label>
+                                            <input
+                                                type="text"
+                                                value={data.gemini_model}
+                                                onChange={e => setData('gemini_model', e.target.value)}
+                                                placeholder="gemini-2.5-flash"
+                                                className="w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white sm:text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 space-y-3">
+                                        <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Anthropic Claude Settings</h4>
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-500 mb-1">Anthropic API Key</label>
+                                            <input
+                                                type="password"
+                                                value={data.anthropic_api_key}
+                                                onChange={e => setData('anthropic_api_key', e.target.value)}
+                                                placeholder="sk-ant-..."
+                                                className="w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white sm:text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-500 mb-1">Claude Model</label>
+                                            <input
+                                                type="text"
+                                                value={data.anthropic_model}
+                                                onChange={e => setData('anthropic_model', e.target.value)}
+                                                placeholder="claude-sonnet-4-5"
+                                                className="w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white sm:text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
