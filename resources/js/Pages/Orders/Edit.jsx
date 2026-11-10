@@ -144,6 +144,9 @@ export default function Edit({ auth, order, customers, employees, services, paym
 
     const submit = (e) => {
         e.preventDefault();
+        if (data.status === 'completed' && data.payment_status !== 'paid') {
+            return;
+        }
         put(route('orders.update', order.id));
     };
 
@@ -202,9 +205,13 @@ export default function Edit({ auth, order, customers, employees, services, paym
                                         <option value="pending">Pending Approval</option>
                                         <option value="in_progress">In Progress (Production)</option>
                                         <option value="ready">Ready for Pickup/Delivery</option>
-                                        <option value="completed">Completed</option>
+                                        <option value="completed" disabled={data.payment_status !== 'paid'}>Completed {data.payment_status !== 'paid' ? '(Requires Fully Paid)' : ''}</option>
                                         <option value="cancelled">Cancelled</option>
                                     </select>
+                                    {data.payment_status !== 'paid' && (
+                                        <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">Status cannot be "COMPLETED" unless payment status is "Fully Paid".</p>
+                                    )}
+                                    {errors.status && <div className="text-red-500 mt-1 text-sm">{errors.status}</div>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Payment Status *</label>
@@ -212,6 +219,10 @@ export default function Edit({ auth, order, customers, employees, services, paym
                                         const status = e.target.value;
                                         setData(d => {
                                             let newPayments = [...d.payments];
+                                            let newStatus = d.status;
+                                            if (status !== 'paid' && newStatus === 'completed') {
+                                                newStatus = 'ready';
+                                            }
                                             if (status === 'paid') {
                                                 if (newPayments.length === 0) {
                                                     newPayments = [{ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: d.order_total, reference_number: '', payment_date: new Date().toISOString().split('T')[0] }];
@@ -227,13 +238,14 @@ export default function Edit({ auth, order, customers, employees, services, paym
                                             } else if (status === 'partial' && newPayments.length === 0) {
                                                 newPayments = [{ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: '', reference_number: '', payment_date: new Date().toISOString().split('T')[0] }];
                                             }
-                                            return { ...d, payment_status: status, payments: newPayments };
+                                            return { ...d, status: newStatus, payment_status: status, payments: newPayments };
                                         });
                                     }} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" required>
                                         <option value="unpaid">Unpaid</option>
                                         <option value="partial">Partial / Deposit Paid</option>
                                         <option value="paid">Fully Paid</option>
                                     </select>
+                                    {errors.payment_status && <div className="text-red-500 mt-1 text-sm">{errors.payment_status}</div>}
                                     {order.fully_paid_at && (
                                         <p className="mt-1.5 text-xs text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
                                             <svg className="w-3.5 h-3.5 inline text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>

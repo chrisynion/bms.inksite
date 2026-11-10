@@ -66,18 +66,26 @@ class PaymentController extends Controller
         if ($totalPaid < $invoice->total_amount && $totalPaid > 0) {
             $invoice->update(['status' => 'sent']);
             if ($invoice->order) {
-                $invoice->order->update([
+                $orderUpdates = [
                     'payment_status' => 'partial',
                     'fully_paid_at' => null,
-                ]);
+                ];
+                if ($invoice->order->status === 'completed') {
+                    $orderUpdates['status'] = 'ready';
+                }
+                $invoice->order->update($orderUpdates);
             }
         } elseif ($totalPaid <= 0) {
             $invoice->update(['status' => 'sent']);
             if ($invoice->order) {
-                $invoice->order->update([
+                $orderUpdates = [
                     'payment_status' => 'unpaid',
                     'fully_paid_at' => null,
-                ]);
+                ];
+                if ($invoice->order->status === 'completed') {
+                    $orderUpdates['status'] = 'ready';
+                }
+                $invoice->order->update($orderUpdates);
             }
         }
         

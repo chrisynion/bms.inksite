@@ -38,7 +38,15 @@ class OrderController extends Controller
             'customer_id' => 'required|exists:customers,id',
             'assigned_to' => 'nullable|exists:employees,id',
             'order_date' => 'nullable|date',
-            'status' => 'required|string',
+            'status' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($value === 'completed' && $request->input('payment_status') !== 'paid') {
+                        $fail('The Status cannot be "COMPLETED" if the order is not Fully Paid.');
+                    }
+                },
+            ],
             'order_total' => 'nullable|numeric|min:0',
             'payment_status' => 'required|string',
             'payments' => 'nullable|array',
@@ -87,14 +95,14 @@ class OrderController extends Controller
         $order = Order::create([
             'order_number' => $validated['order_number'],
             'customer_id' => $validated['customer_id'],
-            'assigned_to' => $validated['assigned_to'],
+            'assigned_to' => $validated['assigned_to'] ?? null,
             'order_date' => $validated['order_date'] ?? now()->toDateString(),
             'status' => $validated['status'],
             'order_total' => $validated['order_total'],
             'payment_status' => $validated['payment_status'],
             'payment_amount' => $paymentAmount,
             'fully_paid_at' => $isFullyPaid ? now() : null,
-            'order_notes' => $validated['order_notes'],
+            'order_notes' => $validated['order_notes'] ?? null,
         ]);
 
         if (!empty($validated['payments'])) {
@@ -148,7 +156,15 @@ class OrderController extends Controller
             'customer_id' => 'required|exists:customers,id',
             'assigned_to' => 'nullable|exists:employees,id',
             'order_date' => 'nullable|date',
-            'status' => 'required|string',
+            'status' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($value === 'completed' && $request->input('payment_status') !== 'paid') {
+                        $fail('The Status cannot be "COMPLETED" if the order is not Fully Paid.');
+                    }
+                },
+            ],
             'order_total' => 'nullable|numeric|min:0',
             'payment_status' => 'required|string',
             'payments' => 'nullable|array',
@@ -197,14 +213,14 @@ class OrderController extends Controller
 
         $order->update([
             'customer_id' => $validated['customer_id'],
-            'assigned_to' => $validated['assigned_to'],
+            'assigned_to' => $validated['assigned_to'] ?? null,
             'order_date' => $validated['order_date'] ?? ($order->order_date ?? now()->toDateString()),
             'status' => $validated['status'],
             'order_total' => $validated['order_total'],
             'payment_status' => $validated['payment_status'],
             'payment_amount' => $paymentAmount,
             'fully_paid_at' => $fullyPaidAt,
-            'order_notes' => $validated['order_notes'],
+            'order_notes' => $validated['order_notes'] ?? null,
         ]);
 
         // Sync payments
