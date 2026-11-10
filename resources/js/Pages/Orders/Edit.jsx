@@ -15,7 +15,7 @@ const PRESET_SIZES = [
     { name: '8x10 in', w: 8, h: 10 },
 ];
 
-export default function Edit({ auth, order, customers, employees, services, payment_modes }) {
+export default function Edit({ auth, order, customers, employees, services, payment_modes, flash }) {
     const [deletingKeys, setDeletingKeys] = useState([]);
     const { data, setData, put, processing, errors } = useForm({
         customer_id: order.customer_id || '',
@@ -153,16 +153,66 @@ export default function Edit({ auth, order, customers, employees, services, paym
     return (
         <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Edit Order: {order.order_number}</h2>}>
             <Head title={`Edit Order ${order.order_number}`} />
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mb-4 flex justify-end">
-                    {order.invoice ? (
-                        <Link href={route('invoices.show', order.invoice.id)} className="px-5 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 transition font-medium">View Invoice</Link>
-                    ) : (
-                        <Link href={route('invoices.store')} method="post" data={{ order_id: order.id }} as="button" className="px-5 py-2 bg-green-600 text-white rounded-md shadow hover:bg-green-700 transition font-medium text-sm">Generate Invoice</Link>
-                    )}
+
+            <form onSubmit={submit}>
+                {/* Sticky Action Bar */}
+                <div className="sticky top-0 z-20 bg-white/95 dark:bg-gray-800/95 backdrop-blur shadow-sm border-b border-gray-200 dark:border-gray-700 py-3 mb-4 transition-all">
+                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4 flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold">Grand Total:</span>
+                            <span className="text-2xl font-black text-gray-900 dark:text-white">
+                                ₱{parseFloat(data.order_total || 0).toFixed(2)}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-3 flex-wrap">
+                            {order.invoice ? (
+                                <Link 
+                                    href={route('invoices.show', order.invoice.id)} 
+                                    className="px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 transition font-medium text-sm inline-flex items-center"
+                                >
+                                    View Invoice
+                                </Link>
+                            ) : (
+                                <Link 
+                                    href={route('invoices.store')} 
+                                    method="post" 
+                                    data={{ order_id: order.id }} 
+                                    as="button" 
+                                    className="px-4 py-2 bg-green-600 text-white rounded-md shadow hover:bg-green-700 transition font-medium text-sm inline-flex items-center"
+                                >
+                                    Generate Invoice
+                                </Link>
+                            )}
+                            <Link 
+                                href={route('orders.index')} 
+                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition text-sm font-medium"
+                            >
+                                Cancel
+                            </Link>
+                            <button 
+                                type="submit" 
+                                disabled={processing} 
+                                className="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition font-medium text-sm shadow disabled:opacity-50 inline-flex items-center gap-1.5"
+                            >
+                                {processing ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <form onSubmit={submit} className="space-y-6">
+
+                <div className="pb-12">
+                    {(flash?.success || auth?.flash?.success) && (
+                        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mb-6 px-4">
+                            <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 px-4 py-3 rounded-lg shadow-sm flex items-center gap-2">
+                                <svg className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span className="font-medium text-sm">{flash?.success || auth?.flash?.success}</span>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                         
                         {/* Master Order Info */}
                         <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm flex flex-col sm:rounded-lg p-6 border border-gray-100 dark:border-gray-700">
@@ -454,13 +504,13 @@ export default function Edit({ auth, order, customers, employees, services, paym
 
                         {/* Submit */}
                         <div className="flex justify-end gap-4 mt-6 items-center">
-                            <span className="text-xl font-bold dark:text-white mr-6">Grand Total: ₱{data.order_total}</span>
+                            <span className="text-xl font-bold dark:text-white mr-6">Grand Total: ₱{parseFloat(data.order_total || 0).toFixed(2)}</span>
                             <Link href={route('orders.index')} className="px-4 py-2 border rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Cancel</Link>
                             <button type="submit" disabled={processing} className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition font-medium text-lg disabled:opacity-50">Save Changes</button>
                         </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+            </form>
 
             {/* Quick Customer Modal */}
             {showQuickCustomer && (

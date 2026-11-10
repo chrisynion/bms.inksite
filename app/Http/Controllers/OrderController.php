@@ -264,7 +264,7 @@ class OrderController extends Controller
             $order->deductInventory();
         }
 
-        return redirect()->route('orders.index')->with('success', 'Order updated successfully.');
+        return redirect()->route('orders.edit', $order->id)->with('success', 'Order updated successfully.');
     }
 
     public function destroy(Order $order)

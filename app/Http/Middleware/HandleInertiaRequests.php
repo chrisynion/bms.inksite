@@ -41,6 +41,14 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'flash' => [
+                    'success' => $request->session()->get('success'),
+                    'error' => $request->session()->get('error'),
+                ],
+            ],
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
             ],
             'globalSettings' => [
                 'logo_url' => (\Illuminate\Support\Facades\Schema::hasTable('settings') && ($path = \App\Models\Setting::where('key', 'logo_path')->value('value'))) 
