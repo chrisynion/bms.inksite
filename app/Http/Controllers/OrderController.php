@@ -67,6 +67,23 @@ class OrderController extends Controller
 
         $isFullyPaid = ($validated['payment_status'] === 'paid');
 
+        if ($isFullyPaid) {
+            $orderTotal = (float) ($validated['order_total'] ?? 0);
+            if ($paymentAmount < $orderTotal) {
+                $missing = $orderTotal - $paymentAmount;
+                $defaultMode = !empty($validated['payments'][0]['payment_mode']) 
+                    ? $validated['payments'][0]['payment_mode'] 
+                    : 'Cash';
+                $validated['payments'][] = [
+                    'payment_mode' => $defaultMode,
+                    'amount' => $missing,
+                    'reference_number' => 'Full Payment',
+                    'payment_date' => $validated['order_date'] ?? now()->toDateString(),
+                ];
+                $paymentAmount = $orderTotal;
+            }
+        }
+
         $order = Order::create([
             'order_number' => $validated['order_number'],
             'customer_id' => $validated['customer_id'],
@@ -159,6 +176,23 @@ class OrderController extends Controller
         }
 
         $isFullyPaid = ($validated['payment_status'] === 'paid');
+
+        if ($isFullyPaid) {
+            $orderTotal = (float) ($validated['order_total'] ?? 0);
+            if ($paymentAmount < $orderTotal) {
+                $missing = $orderTotal - $paymentAmount;
+                $defaultMode = !empty($validated['payments'][0]['payment_mode']) 
+                    ? $validated['payments'][0]['payment_mode'] 
+                    : 'Cash';
+                $validated['payments'][] = [
+                    'payment_mode' => $defaultMode,
+                    'amount' => $missing,
+                    'reference_number' => 'Full Payment',
+                    'payment_date' => $validated['order_date'] ?? now()->toDateString(),
+                ];
+                $paymentAmount = $orderTotal;
+            }
+        }
         $fullyPaidAt = $isFullyPaid ? ($order->fully_paid_at ?? now()) : null;
 
         $order->update([

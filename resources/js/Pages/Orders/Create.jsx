@@ -87,11 +87,18 @@ export default function Create({ auth, customers, employees, services, payment_m
             if (actualIndex > -1) {
                 newItems.splice(actualIndex, 1);
                 const newTotal = calculateTotal(newItems);
-                setData(d => ({ 
-                    ...d, 
-                    items: newItems, 
-                    order_total: newTotal,
-                }));
+                setData(d => {
+                    let newPayments = d.payments;
+                    if (d.payment_status === 'paid' && d.payments.length === 1) {
+                        newPayments = [{ ...d.payments[0], amount: newTotal }];
+                    }
+                    return { 
+                        ...d, 
+                        items: newItems, 
+                        order_total: newTotal,
+                        payments: newPayments,
+                    };
+                });
             }
             setDeletingKeys(prev => prev.filter(k => k !== itemKey));
         }, 500);
@@ -111,11 +118,18 @@ export default function Create({ auth, customers, employees, services, payment_m
         }
         
         const newTotal = calculateTotal(newItems);
-        setData(d => ({ 
-            ...d, 
-            items: newItems, 
-            order_total: newTotal,
-        }));
+        setData(d => {
+            let newPayments = d.payments;
+            if (d.payment_status === 'paid' && d.payments.length === 1) {
+                newPayments = [{ ...d.payments[0], amount: newTotal }];
+            }
+            return { 
+                ...d, 
+                items: newItems, 
+                order_total: newTotal,
+                payments: newPayments,
+            };
+        });
     };
 
     const submit = (e) => {
@@ -180,13 +194,23 @@ export default function Create({ auth, customers, employees, services, payment_m
                                     <select value={data.payment_status} onChange={e => {
                                         const status = e.target.value;
                                         setData(d => {
-                                            const newD = { ...d, payment_status: status };
-                                            if (status === 'paid' && newD.payments.length === 0) {
-                                                newD.payments = [{ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: newD.order_total, reference_number: '', payment_date: new Date().toISOString().split('T')[0] }];
-                                            } else if (status === 'partial' && newD.payments.length === 0) {
-                                                newD.payments = [{ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: '', reference_number: '', payment_date: new Date().toISOString().split('T')[0] }];
+                                            let newPayments = [...d.payments];
+                                            if (status === 'paid') {
+                                                if (newPayments.length === 0) {
+                                                    newPayments = [{ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: d.order_total, reference_number: '', payment_date: new Date().toISOString().split('T')[0] }];
+                                                } else if (newPayments.length === 1) {
+                                                    newPayments[0] = { ...newPayments[0], amount: d.order_total };
+                                                } else {
+                                                    const alreadyPaid = newPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+                                                    const diff = Math.max(0, parseFloat(d.order_total) - alreadyPaid);
+                                                    if (diff > 0) {
+                                                        newPayments.push({ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: diff.toFixed(2), reference_number: 'Balance Payment', payment_date: new Date().toISOString().split('T')[0] });
+                                                    }
+                                                }
+                                            } else if (status === 'partial' && newPayments.length === 0) {
+                                                newPayments = [{ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: '', reference_number: '', payment_date: new Date().toISOString().split('T')[0] }];
                                             }
-                                            return newD;
+                                            return { ...d, payment_status: status, payments: newPayments };
                                         });
                                     }} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" required>
                                         <option value="unpaid">Unpaid</option>

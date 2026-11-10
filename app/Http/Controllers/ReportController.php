@@ -92,4 +92,16 @@ class ReportController extends Controller
             ], 422);
         }
     }
+
+    public function syncPaidOrders(Request $request)
+    {
+        try {
+            $result = $this->reporting->syncPaidOrders();
+            $formattedAmount = number_format($result['total_restored'], 2);
+
+            return back()->with('success', "Successfully synchronized {$result['updated_count']} paid orders and restored ₱{$formattedAmount} in payment records.");
+        } catch (Throwable $e) {
+            return back()->with('error', 'Error syncing paid orders: ' . $e->getMessage());
+        }
+    }
 }

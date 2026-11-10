@@ -66,6 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
         Route::post('reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
+        Route::post('reports/sync-paid-orders', [ReportController::class, 'syncPaidOrders'])->name('reports.sync-paid-orders');
         Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'destroy']);
         Route::resource('employees', EmployeeController::class);
         Route::resource('equipment', EquipmentController::class);

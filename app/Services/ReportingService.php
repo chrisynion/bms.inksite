@@ -98,6 +98,7 @@ class ReportingService
 
         // Total Unpaid / Outstanding Receivables (non-cancelled, non-quote orders)
         $unpaidOrders = Order::whereNotIn('status', ['cancelled', 'quote'])
+            ->whereIn('payment_status', ['unpaid', 'partial'])
             ->whereRaw('COALESCE(order_total, 0) > COALESCE(payment_amount, 0)')
             ->get();
 
@@ -234,6 +235,7 @@ class ReportingService
 
         $unpaidOrders = Order::with('customer')
             ->whereNotIn('status', ['cancelled', 'quote'])
+            ->whereIn('payment_status', ['unpaid', 'partial'])
             ->whereRaw('COALESCE(order_total, 0) > COALESCE(payment_amount, 0)')
             ->orderBy('order_date', 'asc')
             ->take(20)
@@ -317,7 +319,12 @@ class ReportingService
             $validOrders = $c->orders;
             $NonQuoteOrders = $validOrders->where('status', '!=', 'quote');
             $totalBilled = (float) $NonQuoteOrders->sum('order_total');
-            $totalPaid = (float) $NonQuoteOrders->sum('payment_amount');
+            $totalPaid = (float) $NonQuoteOrders->sum(function ($o) {
+                if ($o->payment_status === 'paid') {
+                    return (float) $o->order_total;
+                }
+                return (float) ($o->payment_amount ?? 0);
+            });
 
             return [
                 'customer_id' => $c->id,
@@ -397,12 +404,77 @@ class ReportingService
     }
 
     /**
+     * Synchronize and repair payment records for orders marked 'paid' where payment_amount < order_total.
+     */
+    public function syncPaidOrders(): array
+    {
+        $settings = Setting::where('key', 'payment_modes')->first();
+        $paymentModes = $settings ? json_decode($settings->value, true) : [];
+        $defaultMode = 'Cash';
+        if (!empty($paymentModes) && is_array($paymentModes)) {
+            $first = $paymentModes[0];
+            $defaultMode = is_array($first) && isset($first['name']) ? $first['name'] : (is_string($first) ? $first : 'Cash');
+        }
+
+        $orders = Order::where('payment_status', 'paid')
+            ->where(function ($q) {
+                $q->whereNull('payment_amount')
+                  ->orWhereRaw('COALESCE(payment_amount, 0) < COALESCE(order_total, 0)');
+            })
+            ->get();
+
+        $updatedCount = 0;
+        $totalRestored = 0.0;
+
+        foreach ($orders as $order) {
+            $orderTotal = (float) $order->order_total;
+            $existingPaymentsSum = (float) $order->payments()->sum('amount');
+            $missingAmount = max(0, $orderTotal - $existingPaymentsSum);
+
+            if ($missingAmount > 0) {
+                $paymentDate = $order->order_date 
+                    ? $order->order_date->toDateString() 
+                    : ($order->created_at ? $order->created_at->toDateString() : now()->toDateString());
+
+                $order->payments()->create([
+                    'payment_mode' => $defaultMode,
+                    'amount' => $missingAmount,
+                    'reference_number' => 'Auto-Sync (Marked Paid)',
+                    'payment_date' => $paymentDate,
+                ]);
+
+                $totalRestored += $missingAmount;
+            }
+
+            $order->update([
+                'payment_amount' => $orderTotal,
+                'fully_paid_at' => $order->fully_paid_at ?? $order->updated_at ?? now(),
+            ]);
+
+            $updatedCount++;
+        }
+
+        return [
+            'updated_count' => $updatedCount,
+            'total_restored' => $totalRestored,
+        ];
+    }
+
+    /**
      * 6. Full Business Snapshot combining all dimensions for executive AI reporting.
      */
     public function getFullBusinessSnapshot(?string $startDate = null, ?string $endDate = null): array
     {
+        $paidDiscrepancyCount = Order::where('payment_status', 'paid')
+            ->where(function ($q) {
+                $q->whereNull('payment_amount')
+                  ->orWhereRaw('COALESCE(payment_amount, 0) < COALESCE(order_total, 0)');
+            })
+            ->count();
+
         return [
             'generated_at' => Carbon::now()->toIso8601String(),
+            'paid_discrepancy_count' => $paidDiscrepancyCount,
             'financial_summary' => $this->getFinancialSummary($startDate, $endDate),
             'orders_and_services' => $this->analyzeOrdersAndServices($startDate, $endDate),
             'inventory_report' => $this->getInventoryReport(10),

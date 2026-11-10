@@ -29,13 +29,25 @@ class PaymentController extends Controller
             if ($invoice->order) {
                 $invoice->order->update([
                     'payment_status' => 'paid',
+                    'payment_amount' => $invoice->order->order_total,
                     'fully_paid_at' => $invoice->order->fully_paid_at ?? now(),
                 ]);
+
+                $orderPaymentsTotal = (float) $invoice->order->payments()->sum('amount');
+                if ($orderPaymentsTotal < (float) $invoice->order->order_total) {
+                    $invoice->order->payments()->create([
+                        'payment_mode' => $validated['payment_method'],
+                        'amount' => (float) $invoice->order->order_total - $orderPaymentsTotal,
+                        'reference_number' => $validated['reference_number'] ?? ('Invoice ' . $invoice->invoice_number),
+                        'payment_date' => $validated['payment_date'],
+                    ]);
+                }
             }
         } elseif ($totalPaid > 0) {
             if ($invoice->order) {
                 $invoice->order->update([
                     'payment_status' => 'partial',
+                    'payment_amount' => $totalPaid,
                     'fully_paid_at' => null,
                 ]);
             }

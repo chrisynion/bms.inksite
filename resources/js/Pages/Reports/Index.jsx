@@ -245,6 +245,33 @@ export default function Index({ auth, snapshot, filters, ai_config, mcp_info }) 
                         </div>
                     )}
 
+                    {/* Discrepancy Auto-Sync Alert */}
+                    {snapshot.paid_discrepancy_count > 0 && (
+                        <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-amber-100 dark:bg-amber-800 rounded-lg text-amber-700 dark:text-amber-200 shrink-0">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-bold text-amber-900 dark:text-amber-200">
+                                        {snapshot.paid_discrepancy_count} Orders Marked "Paid" Have Missing Payment Records
+                                    </h4>
+                                    <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                                        These orders were flagged as "Fully Paid", but their payment amounts were saved as ₱0 or partial in previous entries.
+                                    </p>
+                                </div>
+                            </div>
+                            <Link
+                                href={route('reports.sync-paid-orders')}
+                                method="post"
+                                as="button"
+                                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-md shadow-sm transition whitespace-nowrap shrink-0"
+                            >
+                                Sync & Restore {snapshot.paid_discrepancy_count} Orders Now
+                            </Link>
+                        </div>
+                    )}
+
                     {/* Date Range Filter Bar */}
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                         <form onSubmit={applyDateFilter} className="flex flex-wrap items-end gap-4">

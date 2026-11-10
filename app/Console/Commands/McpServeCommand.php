@@ -269,6 +269,14 @@ class McpServeCommand extends Command
                     ],
                 ],
             ],
+            [
+                'name' => 'sync_paid_orders',
+                'description' => 'Synchronize and restore missing payment records for all orders marked as "paid" where payment_amount was recorded as 0 or less than order_total.',
+                'inputSchema' => [
+                    'type' => 'object',
+                    'properties' => (object) [],
+                ],
+            ],
         ];
     }
 
@@ -298,6 +306,7 @@ class McpServeCommand extends Command
                 $args['start_date'] ?? null,
                 $args['end_date'] ?? null
             ),
+            'sync_paid_orders' => $this->reporting->syncPaidOrders(),
             default => throw new \InvalidArgumentException("Unknown MCP tool: {$name}"),
         };
     }

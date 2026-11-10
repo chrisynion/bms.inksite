@@ -97,11 +97,18 @@ export default function Edit({ auth, order, customers, employees, services, paym
             if (actualIndex > -1) {
                 newItems.splice(actualIndex, 1);
                 const newTotal = calculateTotal(newItems);
-                setData(d => ({ 
-                    ...d, 
-                    items: newItems, 
-                    order_total: newTotal,
-                }));
+                setData(d => {
+                    let newPayments = d.payments;
+                    if (d.payment_status === 'paid' && d.payments.length === 1) {
+                        newPayments = [{ ...d.payments[0], amount: newTotal }];
+                    }
+                    return { 
+                        ...d, 
+                        items: newItems, 
+                        order_total: newTotal,
+                        payments: newPayments,
+                    };
+                });
             }
             setDeletingKeys(prev => prev.filter(k => k !== itemKey));
         }, 500);
@@ -121,11 +128,18 @@ export default function Edit({ auth, order, customers, employees, services, paym
         }
         
         const newTotal = calculateTotal(newItems);
-        setData(d => ({ 
-            ...d, 
-            items: newItems, 
-            order_total: newTotal,
-        }));
+        setData(d => {
+            let newPayments = d.payments;
+            if (d.payment_status === 'paid' && d.payments.length === 1) {
+                newPayments = [{ ...d.payments[0], amount: newTotal }];
+            }
+            return { 
+                ...d, 
+                items: newItems, 
+                order_total: newTotal,
+                payments: newPayments,
+            };
+        });
     };
 
     const submit = (e) => {
@@ -197,13 +211,23 @@ export default function Edit({ auth, order, customers, employees, services, paym
                                     <select value={data.payment_status} onChange={e => {
                                         const status = e.target.value;
                                         setData(d => {
-                                            const newD = { ...d, payment_status: status };
-                                            if (status === 'paid' && newD.payments.length === 0) {
-                                                newD.payments = [{ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: newD.order_total, reference_number: '', payment_date: new Date().toISOString().split('T')[0] }];
-                                            } else if (status === 'partial' && newD.payments.length === 0) {
-                                                newD.payments = [{ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: '', reference_number: '', payment_date: new Date().toISOString().split('T')[0] }];
+                                            let newPayments = [...d.payments];
+                                            if (status === 'paid') {
+                                                if (newPayments.length === 0) {
+                                                    newPayments = [{ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: d.order_total, reference_number: '', payment_date: new Date().toISOString().split('T')[0] }];
+                                                } else if (newPayments.length === 1) {
+                                                    newPayments[0] = { ...newPayments[0], amount: d.order_total };
+                                                } else {
+                                                    const alreadyPaid = newPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+                                                    const diff = Math.max(0, parseFloat(d.order_total) - alreadyPaid);
+                                                    if (diff > 0) {
+                                                        newPayments.push({ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: diff.toFixed(2), reference_number: 'Balance Payment', payment_date: new Date().toISOString().split('T')[0] });
+                                                    }
+                                                }
+                                            } else if (status === 'partial' && newPayments.length === 0) {
+                                                newPayments = [{ _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: '', reference_number: '', payment_date: new Date().toISOString().split('T')[0] }];
                                             }
-                                            return newD;
+                                            return { ...d, payment_status: status, payments: newPayments };
                                         });
                                     }} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300" required>
                                         <option value="unpaid">Unpaid</option>
@@ -279,6 +303,26 @@ export default function Edit({ auth, order, customers, employees, services, paym
                                          <div className="mt-2 text-sm">
                                              <span className="text-gray-500 dark:text-gray-400">Balance Due: </span>
                                              <span className="font-bold text-red-600 dark:text-red-400">₱{(data.order_total - data.payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)).toFixed(2)}</span>
+                                         </div>
+                                     )}
+                                     {data.payment_status === 'paid' && (data.order_total - data.payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)) > 0.01 && (
+                                         <div className="mt-2 text-xs flex items-center justify-between p-2 rounded bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300">
+                                             <span>Payment records short by ₱{(data.order_total - data.payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)).toFixed(2)}</span>
+                                             <button
+                                                 type="button"
+                                                 onClick={() => {
+                                                     const alreadyPaid = data.payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+                                                     const diff = Math.max(0, parseFloat(data.order_total) - alreadyPaid);
+                                                     if (data.payments.length === 0 || data.payments.length === 1) {
+                                                         setData('payments', [{ ...(data.payments[0] || {}), _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: data.order_total, reference_number: data.payments[0]?.reference_number || '', payment_date: data.payments[0]?.payment_date || new Date().toISOString().split('T')[0] }]);
+                                                     } else {
+                                                         setData('payments', [...data.payments, { _key: Date.now(), payment_mode: payment_modes[0] || 'Cash', amount: diff.toFixed(2), reference_number: 'Balance Payment', payment_date: new Date().toISOString().split('T')[0] }]);
+                                                     }
+                                                 }}
+                                                 className="font-bold underline text-amber-900 dark:text-amber-200 ml-2"
+                                             >
+                                                 Auto-fill Balance
+                                             </button>
                                          </div>
                                      )}
                                      <input type="hidden" value={data.order_total} />

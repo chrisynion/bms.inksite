@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function Index({ auth, settings }) {
     const { data, setData, post, processing, errors, recentlySuccessful } = useForm({
@@ -173,6 +173,22 @@ export default function Index({ auth, settings }) {
                                 {recentlySuccessful && <span className="ml-3 text-sm text-green-600 dark:text-green-400">Saved successfully!</span>}
                             </div>
                         </form>
+
+                        <div className="mt-12 border-t pt-8 dark:border-gray-700">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Data Maintenance & Reconciliation</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                If you have older orders marked "Fully Paid" where payment amounts were saved as ₱0 or partial, this tool automatically generates the corresponding payment entries and synchronizes your cashbook records.
+                            </p>
+                            <Link
+                                href={route('reports.sync-paid-orders')}
+                                method="post"
+                                as="button"
+                                className="inline-flex items-center px-4 py-2 border border-amber-300 dark:border-amber-700 text-sm font-medium rounded-md text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-900/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition"
+                            >
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                Sync & Repair Paid Orders Data
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
