@@ -314,13 +314,22 @@ export default function Create({ auth, customers, employees, services, payment_m
                             
                             {errors.items && <div className="text-red-500 mb-4">{errors.items}</div>}
 
-                                    <div className="space-y-4">
+                                    <div className="space-y-6">
                                         {data.items.map((item, index) => {
                                             const isDeleting = deletingKeys.includes(item._key);
+                                            const isEven = index % 2 === 0;
+                                            const serviceName = services.find(s => s.id == item.service_id)?.name;
+                                            const hasDims = item.width && item.height;
+                                            const itemTotal = ((parseFloat(item.width) || 1) * (parseFloat(item.height) || 1) * parseFloat(item.quantity) * parseFloat(item.unit_price) || 0).toFixed(2);
+
                                             return (
                                                 <div 
                                                     key={item._key} 
-                                                    className={`relative ${index % 2 === 0 ? 'bg-white dark:bg-gray-800/50' : 'bg-gray-50/80 dark:bg-gray-900/50'} p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-all duration-500 shadow-sm hover:shadow-md ${isDeleting ? 'opacity-0 -translate-x-8 scale-95 pointer-events-none' : 'opacity-100'}`}
+                                                    className={`relative rounded-xl border-2 transition-all duration-300 shadow-sm hover:shadow-md ${
+                                                        isEven 
+                                                            ? 'bg-white dark:bg-gray-800 border-indigo-200 dark:border-indigo-900/60 border-l-8 border-l-indigo-600 dark:border-l-indigo-500' 
+                                                            : 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/60 border-l-8 border-l-amber-500 dark:border-l-amber-500'
+                                                    } ${isDeleting ? 'opacity-0 -translate-x-8 scale-95 pointer-events-none' : 'opacity-100'}`}
                                                     style={{ zIndex: data.items.length - index }}
                                                 >
                                                     {isDeleting && (
@@ -334,75 +343,123 @@ export default function Create({ auth, customers, employees, services, payment_m
                                                             </span>
                                                         </div>
                                                     )}
-                                            <div className="grid grid-cols-12 gap-4 items-end mb-4">
-                                                <div className="col-span-12 md:col-span-4">
-                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Service</label>
-                                                    <SearchableSelect 
-                                                        options={[
-                                                            { id: '', name: '-- Custom Item --' },
-                                                            ...services.map(s => ({ 
-                                                                id: s.id, 
-                                                                name: `${s.name} (₱${parseFloat(s.price || 0).toFixed(2)})` 
-                                                            }))
-                                                        ]}
-                                                        value={item.service_id || ''}
-                                                        onChange={(val) => updateItem(index, 'service_id', val)}
-                                                        placeholder="-- Search Service --"
-                                                        className="mt-1"
-                                                    />
-                                                </div>
-                                                <div className="col-span-4 md:col-span-2">
-                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Qty *</label>
-                                                    <input type="number" step="0.1" min="0.1" value={item.quantity} onChange={e => updateItem(index, 'quantity', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
-                                                </div>
-                                                <div className="col-span-4 md:col-span-2">
-                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Price *</label>
-                                                    <input type="number" step="0.01" min="0" value={item.unit_price} onChange={e => updateItem(index, 'unit_price', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm" required />
-                                                </div>
-                                                <div className="col-span-4 md:col-span-3">
-                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Service Total</label>
-                                                    <div className="block w-full py-2 px-3 bg-gray-50 rounded-md border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm font-semibold">
-                                                        ₱{((parseFloat(item.width) || 1) * (parseFloat(item.height) || 1) * parseFloat(item.quantity) * parseFloat(item.unit_price) || 0).toFixed(2)}
+
+                                                    {/* Full-Width Header Strip */}
+                                                    <div className={`px-4 py-2.5 rounded-t-[10px] border-b flex flex-wrap items-center justify-between gap-2 ${
+                                                        isEven
+                                                            ? 'bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-100 dark:border-indigo-900/50 text-indigo-950 dark:text-indigo-200'
+                                                            : 'bg-amber-100/60 dark:bg-amber-950/40 border-amber-200/80 dark:border-amber-900/50 text-amber-950 dark:text-amber-200'
+                                                    }`}>
+                                                        <div className="flex items-center gap-2.5">
+                                                            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-xs ${
+                                                                isEven
+                                                                    ? 'bg-indigo-600 text-white'
+                                                                    : 'bg-amber-500 text-white'
+                                                            }`}>
+                                                                {index + 1}
+                                                            </span>
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="font-bold text-sm tracking-tight">
+                                                                    Line Item #{index + 1}
+                                                                </span>
+                                                                {(serviceName || item.description) && (
+                                                                    <span className="text-xs opacity-75 font-medium truncate max-w-xs md:max-w-md">
+                                                                        • {serviceName || item.description} {hasDims ? `(${item.width} × ${item.height} ft)` : ''}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2.5">
+                                                            <span className={`text-xs font-bold px-2.5 py-1 rounded-md shadow-xs ${
+                                                                isEven
+                                                                    ? 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'
+                                                                    : 'bg-white dark:bg-gray-800 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                                                            }`}>
+                                                                Total: ₱{itemTotal}
+                                                            </span>
+                                                            {data.items.length > 1 && (
+                                                                <button 
+                                                                    type="button" 
+                                                                    onClick={() => removeItem(index)} 
+                                                                    className="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-800 dark:text-red-400 font-semibold px-2.5 py-1 rounded-md bg-white hover:bg-red-50 dark:bg-gray-800 dark:hover:bg-red-900/30 border border-gray-200 dark:border-gray-700 transition shadow-xs"
+                                                                    title="Remove Item"
+                                                                >
+                                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                                    <span>Remove</span>
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className="col-span-12 md:col-span-1 flex justify-end">
-                                                    {data.items.length > 1 && (
-                                                        <button type="button" onClick={() => removeItem(index)} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 p-2 rounded transition" title="Remove Item">
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="grid grid-cols-12 gap-4 border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
-                                                <div className="col-span-6 md:col-span-3">
-                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Preset Size</label>
-                                                    <select 
-                                                        onChange={(e) => {
-                                                            const preset = PRESET_SIZES.find(p => p.name === e.target.value);
-                                                            if (preset) {
-                                                                updateItem(index, 'width', preset.w);
-                                                                updateItem(index, 'height', preset.h);
-                                                            }
-                                                        }}
-                                                        className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs"
-                                                    >
-                                                        {PRESET_SIZES.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
-                                                    </select>
-                                                </div>
-                                                <div className="col-span-3 md:col-span-2">
-                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Width</label>
-                                                    <input type="number" step="0.01" value={item.width} onChange={e => updateItem(index, 'width', e.target.value)} placeholder="0" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs" />
-                                                </div>
-                                                <div className="col-span-3 md:col-span-2">
-                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Height</label>
-                                                    <input type="number" step="0.01" value={item.height} onChange={e => updateItem(index, 'height', e.target.value)} placeholder="0" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs" />
-                                                </div>
-                                                <div className="col-span-12 md:col-span-5">
-                                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Description / Notes</label>
-                                                    <input type="text" value={item.description} onChange={e => updateItem(index, 'description', e.target.value)} placeholder="e.g. Glossy finish" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs" />
-                                                </div>
-                                            </div>
+
+                                                    {/* Card Content Body */}
+                                                    <div className="p-4 sm:p-5 space-y-4">
+                                                        <div className="grid grid-cols-12 gap-4 items-end">
+                                                            <div className="col-span-12 md:col-span-5">
+                                                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Service</label>
+                                                                <SearchableSelect 
+                                                                    options={[
+                                                                        { id: '', name: '-- Custom Item --' },
+                                                                        ...services.map(s => ({ 
+                                                                            id: s.id, 
+                                                                            name: `${s.name} (₱${parseFloat(s.price || 0).toFixed(2)})` 
+                                                                        }))
+                                                                    ]}
+                                                                    value={item.service_id || ''}
+                                                                    onChange={(val) => updateItem(index, 'service_id', val)}
+                                                                    placeholder="-- Search Service --"
+                                                                    className="mt-1"
+                                                                />
+                                                            </div>
+                                                            <div className="col-span-4 md:col-span-2">
+                                                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Qty *</label>
+                                                                <input type="number" step="0.1" min="0.1" value={item.quantity} onChange={e => updateItem(index, 'quantity', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" required />
+                                                            </div>
+                                                            <div className="col-span-4 md:col-span-2">
+                                                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Price *</label>
+                                                                <input type="number" step="0.01" min="0" value={item.unit_price} onChange={e => updateItem(index, 'unit_price', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500" required />
+                                                            </div>
+                                                            <div className="col-span-4 md:col-span-3">
+                                                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Service Total</label>
+                                                                <div className="block w-full py-2 px-3 bg-white dark:bg-gray-900 rounded-md border border-gray-300 dark:border-gray-600 dark:text-gray-300 text-sm font-bold text-gray-900 dark:text-white shadow-xs">
+                                                                    ₱{itemTotal}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Sizing & Specifications Sub-Panel */}
+                                                        <div className="bg-white/80 dark:bg-gray-900/60 p-3 rounded-lg border border-gray-200/80 dark:border-gray-700/80">
+                                                            <div className="grid grid-cols-12 gap-3 items-center">
+                                                                <div className="col-span-6 md:col-span-3">
+                                                                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Preset Size</label>
+                                                                    <select 
+                                                                        onChange={(e) => {
+                                                                            const preset = PRESET_SIZES.find(p => p.name === e.target.value);
+                                                                            if (preset) {
+                                                                                updateItem(index, 'width', preset.w);
+                                                                                updateItem(index, 'height', preset.h);
+                                                                            }
+                                                                        }}
+                                                                        className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs focus:ring-indigo-500 focus:border-indigo-500"
+                                                                    >
+                                                                        {PRESET_SIZES.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                                                                    </select>
+                                                                </div>
+                                                                <div className="col-span-3 md:col-span-2">
+                                                                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Width (ft)</label>
+                                                                    <input type="number" step="0.01" value={item.width} onChange={e => updateItem(index, 'width', e.target.value)} placeholder="0" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs focus:ring-indigo-500 focus:border-indigo-500" />
+                                                                </div>
+                                                                <div className="col-span-3 md:col-span-2">
+                                                                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Height (ft)</label>
+                                                                    <input type="number" step="0.01" value={item.height} onChange={e => updateItem(index, 'height', e.target.value)} placeholder="0" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs focus:ring-indigo-500 focus:border-indigo-500" />
+                                                                </div>
+                                                                <div className="col-span-12 md:col-span-5">
+                                                                    <label className="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Description / Notes</label>
+                                                                    <input type="text" value={item.description} onChange={e => updateItem(index, 'description', e.target.value)} placeholder="e.g. Glossy finish, eyelets every 1ft" className="block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 text-xs focus:ring-indigo-500 focus:border-indigo-500" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             );
                                         })}

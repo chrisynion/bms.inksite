@@ -1,9 +1,27 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm, router } from '@inertiajs/react';
+import { useEffect } from 'react';
+
+// Track browser history back/forward navigation
+let wasPopstate = false;
+if (typeof window !== 'undefined') {
+    window.addEventListener('popstate', () => {
+        wasPopstate = true;
+    });
+}
 
 export default function Index({ auth, orders, filters }) {
     const { delete: destroy } = useForm();
     const currentPeriod = filters?.period || 'current_month';
+
+    useEffect(() => {
+        // Auto-refresh when returning via browser back button or after editing an order
+        if (wasPopstate || sessionStorage.getItem('orders_need_refresh') === 'true') {
+            wasPopstate = false;
+            sessionStorage.removeItem('orders_need_refresh');
+            router.reload({ only: ['orders'] });
+        }
+    }, []);
 
     const periods = [
         { value: 'current_month', label: 'Current Month' },
