@@ -117,6 +117,7 @@ class OrderController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.width' => 'nullable|numeric|min:0',
             'items.*.height' => 'nullable|numeric|min:0',
+            'items.*.sync_inventory' => 'nullable|boolean',
         ]);
 
         $validated['order_number'] = 'ORD-' . strtoupper(Str::random(8));
@@ -237,6 +238,7 @@ class OrderController extends Controller
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.width' => 'nullable|numeric|min:0',
             'items.*.height' => 'nullable|numeric|min:0',
+            'items.*.sync_inventory' => 'nullable|boolean',
         ]);
 
         $paymentAmount = 0;
@@ -296,12 +298,26 @@ class OrderController extends Controller
             }
         }
 
-        // Sync items (delete removed items)
+        // Sync items (restore inventory and delete removed items)
         $currentItemIds = collect($validated['items'])->pluck('id')->filter()->toArray();
-        $order->items()->whereNotIn('id', $currentItemIds)->delete();
+        $removedItems = $order->items()->whereNotIn('id', $currentItemIds)->get();
+        foreach ($removedItems as $removedItem) {
+            $removedItem->restoreInventory();
+            $removedItem->delete();
+        }
 
+        $syncItemIds = [];
         foreach ($validated['items'] as $item) {
-            $order->items()->updateOrCreate(
+            $existingItem = !empty($item['id']) ? $order->items()->find($item['id']) : null;
+            $isNew = !$existingItem;
+            $specsChanged = $existingItem && (
+                (int) ($existingItem->service_id ?? 0) !== (int) ($item['service_id'] ?? 0) ||
+                (float) $existingItem->quantity !== (float) $item['quantity'] ||
+                (float) ($existingItem->width ?? 0) !== (float) ($item['width'] ?? 0) ||
+                (float) ($existingItem->height ?? 0) !== (float) ($item['height'] ?? 0)
+            );
+
+            $savedItem = $order->items()->updateOrCreate(
                 ['id' => $item['id'] ?? null],
                 [
                     'service_id' => $item['service_id'] ?? null,
@@ -313,9 +329,13 @@ class OrderController extends Controller
                     'total_price' => ($item['width'] ?? 1) * ($item['height'] ?? 1) * $item['quantity'] * $item['unit_price']
                 ]
             );
+
+            if (!empty($item['sync_inventory']) || $isNew || ($specsChanged && $existingItem->inventory_deductions !== null)) {
+                $syncItemIds[] = $savedItem->id;
+            }
         }
 
-        $order->syncInventory();
+        $order->syncInventory($syncItemIds);
 
         return redirect()->route('orders.edit', $order->id)->with('success', 'Order updated successfully.');
     }

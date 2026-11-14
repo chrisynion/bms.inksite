@@ -49,15 +49,14 @@ class Order extends Model
     }
 
     /**
-     * Reconcile inventory deductions for this order: restore any previously
-     * recorded deductions, then deduct current requirements if status qualifies.
+     * Reconcile inventory deductions for this order.
+     * When the order was already deducted, only items in $syncItemIds are re-synced.
      */
-    public function syncInventory(): void
+    public function syncInventory(array $syncItemIds = []): void
     {
-        DB::transaction(function () {
-            $this->restoreRecordedDeductions();
-
+        DB::transaction(function () use ($syncItemIds) {
             if (!in_array($this->status, self::INVENTORY_DEDUCTION_STATUSES, true)) {
+                $this->restoreRecordedDeductions();
                 $this->update([
                     'inventory_deducted' => false,
                     'inventory_deductions' => [],
@@ -65,45 +64,20 @@ class Order extends Model
                 return;
             }
 
+            $wasDeducted = (bool) $this->inventory_deducted;
             $this->load('items.service.inventoryItems');
 
-            $newDeductions = [];
             foreach ($this->items as $item) {
-                if (!$item->service) {
-                    continue;
-                }
-
-                foreach ($item->service->inventoryItems as $material) {
-                    $multiplier = $item->quantity;
-
-                    // If the material is a Roll and the order item has dimensions, deduct by Area
-                    if (strtolower((string) $material->form) === 'roll' && $item->width && $item->height) {
-                        $multiplier = $item->width * $item->height * $item->quantity;
-                    }
-
-                    $deductAmount = $material->pivot->quantity * $multiplier;
-                    if ($deductAmount > 0) {
-                        $newDeductions[$material->id] = ($newDeductions[$material->id] ?? 0) + $deductAmount;
-                    }
+                if (!$wasDeducted || in_array($item->id, $syncItemIds, true)) {
+                    $item->syncInventory();
                 }
             }
 
-            if (!empty($newDeductions)) {
-                $itemsById = InventoryItem::whereIn('id', array_keys($newDeductions))
-                    ->get()
-                    ->keyBy('id');
-
-                foreach ($newDeductions as $inventoryItemId => $amount) {
-                    if (isset($itemsById[$inventoryItemId])) {
-                        $itemsById[$inventoryItemId]->decrement('stock', $amount);
-                    }
-                }
+            if (!$wasDeducted) {
+                $this->update([
+                    'inventory_deducted' => true,
+                ]);
             }
-
-            $this->update([
-                'inventory_deducted' => true,
-                'inventory_deductions' => $newDeductions,
-            ]);
         });
     }
 
@@ -124,6 +98,12 @@ class Order extends Model
 
     private function restoreRecordedDeductions(): void
     {
+        $this->load('items');
+        foreach ($this->items as $item) {
+            $item->restoreInventory();
+        }
+
+        // Legacy fallback: restore order-level deductions if any exist
         $previousDeductions = $this->inventory_deductions ?? [];
         if (empty($previousDeductions)) {
             return;

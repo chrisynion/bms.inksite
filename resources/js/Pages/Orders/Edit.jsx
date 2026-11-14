@@ -36,8 +36,8 @@ export default function Edit({ auth, order, customers, employees, services, paym
             : [],
         order_notes: order.order_notes || '',
         items: order.items.length > 0 
-            ? order.items.map((i, idx) => ({...i, _key: i.id || `init-${idx}`, width: i.width || '', height: i.height || ''})) 
-            : [{ _key: 'init-0', id: null, service_id: '', description: '', quantity: 1, unit_price: 0, width: '', height: '' }]
+            ? order.items.map((i, idx) => ({...i, _key: i.id || `init-${idx}`, width: i.width || '', height: i.height || '', sync_inventory: false})) 
+            : [{ _key: 'init-0', id: null, service_id: '', description: '', quantity: 1, unit_price: 0, width: '', height: '', sync_inventory: false }]
     });
 
     const [showQuickCustomer, setShowQuickCustomer] = useState(false);
@@ -151,6 +151,7 @@ export default function Edit({ auth, order, customers, employees, services, paym
             replace: true,
             onSuccess: () => {
                 sessionStorage.setItem('orders_need_refresh', 'true');
+                setData('items', items => items.map(i => ({ ...i, sync_inventory: false })));
             },
         });
     };
@@ -472,6 +473,20 @@ export default function Edit({ auth, order, customers, employees, services, paym
                                                 </div>
 
                                                 <div className="flex items-center gap-2.5">
+                                                    {order.inventory_deducted && item.id && (
+                                                        <label
+                                                            className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 cursor-pointer select-none hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-xs"
+                                                            title="Check this to re-deduct / sync inventory only for this service when saving"
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={!!item.sync_inventory}
+                                                                onChange={e => updateItem(index, 'sync_inventory', e.target.checked)}
+                                                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-600"
+                                                            />
+                                                            <span>Sync Inventory</span>
+                                                        </label>
+                                                    )}
                                                     <span className={`text-xs font-bold px-2.5 py-1 rounded-md shadow-xs ${
                                                         isEven
                                                             ? 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'

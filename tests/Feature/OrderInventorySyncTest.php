@@ -6,6 +6,105 @@ use App\Models\Order;
 use App\Models\Service;
 use App\Models\User;
 
+test('updating a legacy deducted order only syncs the selected service items', function () {
+    $user = User::factory()->create();
+    $customer = Customer::create(['name' => 'Test Customer', 'phone' => '09123456789']);
+
+    $itemA = InventoryItem::create(['name' => 'New Paper A', 'price' => 10, 'stock' => 100, 'form' => 'sheet']);
+    $itemB = InventoryItem::create(['name' => 'Existing Ink B', 'price' => 20, 'stock' => 50, 'form' => 'sheet']);
+
+    $serviceA = Service::create(['name' => 'Service A', 'price' => 50]);
+    $serviceA->inventoryItems()->attach($itemA->id, ['quantity' => 2]);
+
+    $serviceB = Service::create(['name' => 'Service B', 'price' => 80]);
+    $serviceB->inventoryItems()->attach($itemB->id, ['quantity' => 5]);
+
+    // Simulate a legacy order that already had inventory_deducted = true before per-item tracking existed
+    $order = Order::create([
+        'order_number' => 'ORD-LEGACY01',
+        'customer_id' => $customer->id,
+        'order_date' => now()->toDateString(),
+        'status' => 'in_progress',
+        'order_total' => 230,
+        'payment_status' => 'unpaid',
+        'inventory_deducted' => true,
+    ]);
+    $orderItemA = $order->items()->create([
+        'service_id' => $serviceA->id,
+        'description' => 'Item A',
+        'quantity' => 3,
+        'unit_price' => 50,
+        'total_price' => 150,
+    ]);
+    $orderItemB = $order->items()->create([
+        'service_id' => $serviceB->id,
+        'description' => 'Item B',
+        'quantity' => 1,
+        'unit_price' => 80,
+        'total_price' => 80,
+    ]);
+
+    // Saving without selecting any item should NOT touch either inventory item
+    $this->actingAs($user)->put(route('orders.update', $order->id), [
+        'customer_id' => $customer->id,
+        'order_date' => now()->toDateString(),
+        'status' => 'in_progress',
+        'order_total' => 230,
+        'payment_status' => 'unpaid',
+        'items' => [
+            [
+                'id' => $orderItemA->id,
+                'service_id' => $serviceA->id,
+                'description' => 'Item A',
+                'quantity' => 3,
+                'unit_price' => 50,
+                'sync_inventory' => false,
+            ],
+            [
+                'id' => $orderItemB->id,
+                'service_id' => $serviceB->id,
+                'description' => 'Item B',
+                'quantity' => 1,
+                'unit_price' => 80,
+                'sync_inventory' => false,
+            ],
+        ],
+    ])->assertRedirect(route('orders.edit', $order->id));
+
+    expect($itemA->fresh()->stock)->toBe(100);
+    expect($itemB->fresh()->stock)->toBe(50);
+
+    // Selecting ONLY Service A (sync_inventory = true) should deduct only Item A (2 * 3 = 6) and leave Item B untouched
+    $this->actingAs($user)->put(route('orders.update', $order->id), [
+        'customer_id' => $customer->id,
+        'order_date' => now()->toDateString(),
+        'status' => 'in_progress',
+        'order_total' => 230,
+        'payment_status' => 'unpaid',
+        'items' => [
+            [
+                'id' => $orderItemA->id,
+                'service_id' => $serviceA->id,
+                'description' => 'Item A',
+                'quantity' => 3,
+                'unit_price' => 50,
+                'sync_inventory' => true,
+            ],
+            [
+                'id' => $orderItemB->id,
+                'service_id' => $serviceB->id,
+                'description' => 'Item B',
+                'quantity' => 1,
+                'unit_price' => 80,
+                'sync_inventory' => false,
+            ],
+        ],
+    ])->assertRedirect(route('orders.edit', $order->id));
+
+    expect($itemA->fresh()->stock)->toBe(94);
+    expect($itemB->fresh()->stock)->toBe(50);
+});
+
 test('updating an already deducted order after replacing service inventory items deducts the new items', function () {
     $user = User::factory()->create();
     $customer = Customer::create(['name' => 'Test Customer', 'phone' => '09123456789']);
@@ -51,7 +150,7 @@ test('updating an already deducted order after replacing service inventory items
     ]);
     $service->inventoryItems()->attach($newItem->id, ['quantity' => 2]);
 
-    // User opens order and clicks Save
+    // User opens order, checks Sync Inventory on the item, and clicks Save
     $this->actingAs($user)->put(route('orders.update', $order->id), [
         'customer_id' => $customer->id,
         'order_date' => now()->toDateString(),
@@ -65,6 +164,7 @@ test('updating an already deducted order after replacing service inventory items
                 'description' => 'Flyers',
                 'quantity' => 3,
                 'unit_price' => 50,
+                'sync_inventory' => true,
             ],
         ],
     ])->assertRedirect(route('orders.edit', $order->id));
