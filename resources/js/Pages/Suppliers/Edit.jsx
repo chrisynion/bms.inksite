@@ -1,4 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import StickyEditBar from '@/Components/StickyEditBar';
 import { Head, useForm } from '@inertiajs/react';
 
 export default function Edit({ auth, supplier }) {
@@ -17,10 +18,14 @@ export default function Edit({ auth, supplier }) {
     return (
         <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Edit Supplier: {supplier.name}</h2>}>
             <Head title="Edit Supplier" />
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <form onSubmit={submit} className="space-y-6 max-w-2xl">
+            <form onSubmit={submit}>
+                <StickyEditBar backHref={route('suppliers.index')} backLabel="Back to Suppliers" processing={processing}>
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{supplier.name}</span>
+                </StickyEditBar>
+                <div className="pb-12">
+                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                            <div className="space-y-6 max-w-2xl">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2 sm:col-span-1">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Name *</label>
@@ -54,12 +59,13 @@ export default function Edit({ auth, supplier }) {
                             </div>
                             <div className="flex justify-end gap-4 mt-6">
                                 <a href={route('suppliers.index')} className="px-4 py-2 border rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Cancel</a>
-                                <button type="submit" disabled={processing} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition disabled:opacity-50">Save Changes</button>
+                                <button type="submit" disabled={processing} className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition disabled:opacity-50">{processing ? 'Saving...' : 'Save Changes'}</button>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
+            </form>
         </AuthenticatedLayout>
     );
 }
