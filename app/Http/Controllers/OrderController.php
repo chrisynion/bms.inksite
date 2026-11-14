@@ -48,7 +48,7 @@ class OrderController extends Controller
                 break;
         }
 
-        $query = Order::with(['customer', 'employee']);
+        $query = Order::with(['customer', 'employee', 'payments']);
 
         if ($startDate && $endDate) {
             $query->where(function ($q) use ($startDate, $endDate) {
