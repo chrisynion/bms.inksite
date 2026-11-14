@@ -1,13 +1,46 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 
-export default function Index({ auth, orders }) {
+export default function Index({ auth, orders, filters }) {
     const { delete: destroy } = useForm();
+    const currentPeriod = filters?.period || 'current_month';
+
+    const periods = [
+        { value: 'current_month', label: 'Current Month' },
+        { value: 'last_month', label: 'Last Month' },
+        { value: 'last_3_months', label: 'Last 3 Months' },
+        { value: 'last_6_months', label: 'Last 6 Months' },
+        { value: 'full_year', label: 'Full Year' },
+        { value: 'all', label: 'All Orders' },
+    ];
+
+    const handlePeriodChange = (period) => {
+        router.get(
+            route('orders.index'),
+            { period },
+            { preserveState: true, replace: true }
+        );
+    };
 
     const deleteOrder = (id) => {
         if (confirm('Are you sure you want to delete this order?')) {
-            destroy(route('orders.destroy', id));
+            destroy(route('orders.destroy', id), {
+                preserveState: true,
+                preserveScroll: true,
+            });
         }
+    };
+
+    const formatDateRange = () => {
+        if (currentPeriod === 'all' || !filters?.start_date || !filters?.end_date) {
+            return 'All recorded orders';
+        }
+        const [sY, sM, sD] = filters.start_date.split('-');
+        const [eY, eM, eD] = filters.end_date.split('-');
+        const startDate = new Date(Number(sY), Number(sM) - 1, Number(sD));
+        const endDate = new Date(Number(eY), Number(eM) - 1, Number(eD));
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return `${startDate.toLocaleDateString(undefined, options)} – ${endDate.toLocaleDateString(undefined, options)}`;
     };
 
     const getStatusColor = (status) => {
@@ -28,9 +61,71 @@ export default function Index({ auth, orders }) {
             <Head title="Orders" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="mb-4 flex justify-end">
-                        <Link href={route('orders.create')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition shadow-sm font-medium">Create New Order</Link>
+                    {/* Top Filter and Actions Bar */}
+                    <div className="mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            {/* Filter by Period */}
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                <div className="flex items-center text-gray-700 dark:text-gray-300 font-medium text-sm gap-2 shrink-0">
+                                    <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span>Period:</span>
+                                </div>
+
+                                {/* Mobile Select */}
+                                <div className="sm:hidden w-full">
+                                    <select
+                                        value={currentPeriod}
+                                        onChange={(e) => handlePeriodChange(e.target.value)}
+                                        className="w-full text-sm rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                                    >
+                                        {periods.map(p => (
+                                            <option key={p.value} value={p.value}>{p.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Tablet / Desktop Filter Buttons */}
+                                <div className="hidden sm:flex flex-wrap items-center gap-1.5 bg-gray-100 dark:bg-gray-900/60 p-1 rounded-lg border border-gray-200 dark:border-gray-700/60">
+                                    {periods.map(p => {
+                                        const isActive = currentPeriod === p.value;
+                                        return (
+                                            <button
+                                                key={p.value}
+                                                type="button"
+                                                onClick={() => handlePeriodChange(p.value)}
+                                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                                                    isActive
+                                                        ? 'bg-blue-600 text-white shadow-sm'
+                                                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-gray-800'
+                                                }`}
+                                            >
+                                                {p.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Active range info & Create Order */}
+                            <div className="flex flex-wrap items-center justify-between lg:justify-end gap-3 pt-2 lg:pt-0 border-t border-gray-100 dark:border-gray-700 lg:border-t-0">
+                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-gray-900/40 px-3 py-1.5 rounded-md border border-gray-100 dark:border-gray-800">
+                                    {formatDateRange()} • <strong className="text-gray-700 dark:text-gray-300">{orders.length}</strong> {orders.length === 1 ? 'order' : 'orders'}
+                                </span>
+                                <Link
+                                    href={route('orders.create')}
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm font-medium text-sm whitespace-nowrap"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    <span>Create New Order</span>
+                                </Link>
+                            </div>
+                        </div>
                     </div>
+
                     <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm flex flex-col sm:rounded-lg border border-gray-100 dark:border-gray-700">
                         <div className="p-0 overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -48,7 +143,47 @@ export default function Index({ auth, orders }) {
                                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     {orders.length === 0 ? (
                                         <tr>
-                                            <td colSpan="7" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">No orders found. Create your first order to get started.</td>
+                                            <td colSpan="7" className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                                <div className="flex flex-col items-center justify-center">
+                                                    <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-full mb-3 text-gray-400 dark:text-gray-500">
+                                                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
+                                                    </div>
+                                                    <p className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                                                        No orders found for {periods.find(p => p.value === currentPeriod)?.label.toLowerCase() || 'this period'}
+                                                    </p>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mb-4">
+                                                        There are no orders recorded between {formatDateRange().toLowerCase()}. Switch the filter above to view past orders or create a new order.
+                                                    </p>
+                                                    <div className="flex flex-wrap justify-center gap-2">
+                                                        {currentPeriod !== 'full_year' && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handlePeriodChange('full_year')}
+                                                                className="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 transition"
+                                                            >
+                                                                View Full Year
+                                                            </button>
+                                                        )}
+                                                        {currentPeriod !== 'all' && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handlePeriodChange('all')}
+                                                                className="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 transition"
+                                                            >
+                                                                View All Orders
+                                                            </button>
+                                                        )}
+                                                        <Link
+                                                            href={route('orders.create')}
+                                                            className="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm"
+                                                        >
+                                                            Create New Order
+                                                        </Link>
+                                                    </div>
+                                                </div>
+                                            </td>
                                         </tr>
                                     ) : (
                                         orders.map((item) => (

@@ -8,13 +8,68 @@ use App\Models\Employee;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $period = $request->query('period', 'current_month');
+        $now = Carbon::now();
+        $startDate = null;
+        $endDate = null;
+
+        switch ($period) {
+            case 'last_month':
+                $startDate = $now->copy()->subMonthNoOverflow()->startOfMonth()->toDateString();
+                $endDate = $now->copy()->subMonthNoOverflow()->endOfMonth()->toDateString();
+                break;
+            case 'last_3_months':
+                $startDate = $now->copy()->subMonths(3)->startOfMonth()->toDateString();
+                $endDate = $now->copy()->endOfMonth()->toDateString();
+                break;
+            case 'last_6_months':
+                $startDate = $now->copy()->subMonths(6)->startOfMonth()->toDateString();
+                $endDate = $now->copy()->endOfMonth()->toDateString();
+                break;
+            case 'full_year':
+                $startDate = $now->copy()->startOfYear()->toDateString();
+                $endDate = $now->copy()->endOfYear()->toDateString();
+                break;
+            case 'all':
+                $startDate = null;
+                $endDate = null;
+                break;
+            case 'current_month':
+            default:
+                $period = 'current_month';
+                $startDate = $now->copy()->startOfMonth()->toDateString();
+                $endDate = $now->copy()->endOfMonth()->toDateString();
+                break;
+        }
+
+        $query = Order::with(['customer', 'employee']);
+
+        if ($startDate && $endDate) {
+            $query->where(function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('order_date', [$startDate, $endDate])
+                  ->orWhere(function ($sub) use ($startDate, $endDate) {
+                      $sub->whereNull('order_date')
+                          ->whereDate('created_at', '>=', $startDate)
+                          ->whereDate('created_at', '<=', $endDate);
+                  });
+            });
+        }
+
+        $orders = $query->orderBy('order_date', 'desc')->orderBy('created_at', 'desc')->get();
+
         return Inertia::render('Orders/Index', [
-            'orders' => Order::with(['customer', 'employee'])->latest()->get()
+            'orders' => $orders,
+            'filters' => [
+                'period' => $period,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
         ]);
     }
 
@@ -270,6 +325,6 @@ class OrderController extends Controller
     public function destroy(Order $order)
     {
         $order->delete();
-        return redirect()->route('orders.index')->with('success', 'Order deleted successfully.');
+        return redirect()->back(fallback: route('orders.index'))->with('success', 'Order deleted successfully.');
     }
 }
