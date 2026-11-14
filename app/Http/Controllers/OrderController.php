@@ -183,8 +183,8 @@ class OrderController extends Controller
             ]);
         }
 
-        if (in_array($order->status, ['in_progress', 'ready', 'completed'])) {
-            $order->deductInventory();
+        if (in_array($order->status, Order::INVENTORY_DEDUCTION_STATUSES, true)) {
+            $order->syncInventory();
         }
 
         return redirect()->route('orders.index')->with('success', 'Order created successfully.');
@@ -315,15 +315,14 @@ class OrderController extends Controller
             );
         }
 
-        if (in_array($order->status, ['in_progress', 'ready', 'completed'])) {
-            $order->deductInventory();
-        }
+        $order->syncInventory();
 
         return redirect()->route('orders.edit', $order->id)->with('success', 'Order updated successfully.');
     }
 
     public function destroy(Order $order)
     {
+        $order->restoreInventory();
         $order->delete();
         return redirect()->back(fallback: route('orders.index'))->with('success', 'Order deleted successfully.');
     }
