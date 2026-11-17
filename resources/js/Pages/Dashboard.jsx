@@ -1,3 +1,4 @@
+import PaymentSummaryCard from '@/Components/Dashboard/PaymentSummaryCard';
 import PipelineReport from '@/Components/Dashboard/PipelineReport';
 import {
     CustomersReport,
@@ -17,6 +18,7 @@ export default function Dashboard({
     low_stock_items = [],
     account_balances = [],
     top_services = [],
+    payment_summary = null,
     reports = {},
 }) {
     const isAdmin = auth.user?.role?.toLowerCase() === 'admin';
@@ -99,6 +101,11 @@ export default function Dashboard({
                             })}
                         </nav>
                     </div>
+
+                    {/* Admin Payments Summary (Total & Per Payment Mode, Default: Cash) */}
+                    {isAdmin && payment_summary && (
+                        <PaymentSummaryCard summary={payment_summary} />
+                    )}
 
                     {/* Tab Panels */}
                     {activeTab === 'pipeline' && (

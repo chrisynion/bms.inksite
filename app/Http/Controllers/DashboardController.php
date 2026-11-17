@@ -9,6 +9,7 @@ use App\Models\InventoryItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderPayment;
+use App\Models\Setting;
 use App\Services\ReportingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -84,8 +85,174 @@ class DashboardController extends Controller
             'low_stock_items' => $lowStockItems,
             'account_balances' => $accountBalances,
             'top_services' => $topServices,
+            'payment_summary' => $isAdmin ? $this->buildPaymentSummary($request, $now) : null,
             'reports' => $this->buildPrintShopReports($now, $isAdmin, $accountBalances),
         ]);
+    }
+
+    private function resolvePaymentPeriod(Request $request, Carbon $now): array
+    {
+        $period = strtolower((string) $request->query('payment_period', 'today'));
+        if (!in_array($period, ['today', 'week', 'month', 'custom'], true)) {
+            $period = 'today';
+        }
+
+        if ($period === 'week') {
+            $start = $now->copy()->startOfWeek();
+            $end = $now->copy()->endOfWeek();
+            $label = 'This Week';
+        } elseif ($period === 'month') {
+            $start = $now->copy()->startOfMonth();
+            $end = $now->copy()->endOfMonth();
+            $label = 'This Month';
+        } elseif ($period === 'custom') {
+            try {
+                $rawStart = $request->query('payment_start_date');
+                $rawEnd = $request->query('payment_end_date');
+                $start = $rawStart ? Carbon::parse($rawStart)->startOfDay() : $now->copy()->startOfDay();
+                $end = $rawEnd ? Carbon::parse($rawEnd)->endOfDay() : $now->copy()->endOfDay();
+                if ($start->gt($end)) {
+                    [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+                }
+                $label = $start->format('M j') . ' – ' . $end->format('M j, Y');
+            } catch (\Throwable $e) {
+                $period = 'today';
+                $start = $now->copy()->startOfDay();
+                $end = $now->copy()->endOfDay();
+                $label = 'Today';
+            }
+        } else {
+            $start = $now->copy()->startOfDay();
+            $end = $now->copy()->endOfDay();
+            $label = 'Today';
+        }
+
+        return [
+            'period' => $period,
+            'label' => $label,
+            'start_date' => $start->toDateString(),
+            'end_date' => $end->toDateString(),
+        ];
+    }
+
+    private function buildPaymentSummary(Request $request, Carbon $now): array
+    {
+        $range = $this->resolvePaymentPeriod($request, $now);
+        $settings = Setting::where('key', 'payment_modes')->first();
+        $configuredModes = $settings ? json_decode($settings->value, true) : [];
+
+        $modesMap = [];
+        if (is_array($configuredModes)) {
+            foreach ($configuredModes as $mode) {
+                $name = is_array($mode) && isset($mode['name'])
+                    ? (string) $mode['name']
+                    : (is_string($mode) ? $mode : null);
+                if ($name && !isset($modesMap[$name])) {
+                    $modesMap[$name] = [
+                        'name' => $name,
+                        'total' => 0.0,
+                        'count' => 0,
+                        'all_time_total' => 0.0,
+                        'all_time_count' => 0,
+                    ];
+                }
+            }
+        }
+
+        $baseQuery = OrderPayment::whereHas('order', fn ($q) => $q->where('status', '!=', 'cancelled'));
+
+        $periodRows = (clone $baseQuery)
+            ->whereDate('payment_date', '>=', $range['start_date'])
+            ->whereDate('payment_date', '<=', $range['end_date'])
+            ->selectRaw('payment_mode, SUM(amount) as total, COUNT(*) as count')
+            ->groupBy('payment_mode')
+            ->get();
+
+        foreach ($periodRows as $row) {
+            $name = (string) ($row->payment_mode ?: 'Cash');
+            if (!isset($modesMap[$name])) {
+                $modesMap[$name] = [
+                    'name' => $name,
+                    'total' => 0.0,
+                    'count' => 0,
+                    'all_time_total' => 0.0,
+                    'all_time_count' => 0,
+                ];
+            }
+            $modesMap[$name]['total'] += (float) $row->total;
+            $modesMap[$name]['count'] += (int) $row->count;
+        }
+
+        $allTimeRows = (clone $baseQuery)
+            ->selectRaw('payment_mode, SUM(amount) as total, COUNT(*) as count')
+            ->groupBy('payment_mode')
+            ->get();
+
+        foreach ($allTimeRows as $row) {
+            $name = (string) ($row->payment_mode ?: 'Cash');
+            if (!isset($modesMap[$name])) {
+                $modesMap[$name] = [
+                    'name' => $name,
+                    'total' => 0.0,
+                    'count' => 0,
+                    'all_time_total' => 0.0,
+                    'all_time_count' => 0,
+                ];
+            }
+            $modesMap[$name]['all_time_total'] += (float) $row->total;
+            $modesMap[$name]['all_time_count'] += (int) $row->count;
+        }
+
+        if (empty($modesMap)) {
+            $modesMap['Cash'] = [
+                'name' => 'Cash',
+                'total' => 0.0,
+                'count' => 0,
+                'all_time_total' => 0.0,
+                'all_time_count' => 0,
+            ];
+        }
+
+        $modes = array_values($modesMap);
+        $defaultMode = 'Cash';
+        foreach ($modes as $m) {
+            if (strcasecmp($m['name'], 'Cash') === 0) {
+                $defaultMode = $m['name'];
+                break;
+            }
+        }
+        if (collect($modes)->every(fn ($m) => strcasecmp($m['name'], $defaultMode) !== 0)) {
+            $defaultMode = $modes[0]['name'];
+        }
+
+        // Put default mode (Cash) first, then sort remaining by all_time_total desc
+        usort($modes, function ($a, $b) use ($defaultMode) {
+            if ($a['name'] === $defaultMode) {
+                return -1;
+            }
+            if ($b['name'] === $defaultMode) {
+                return 1;
+            }
+            return $b['all_time_total'] <=> $a['all_time_total'];
+        });
+
+        $periodTotal = (float) collect($modes)->sum('total');
+        $periodCount = (int) collect($modes)->sum('count');
+        $allTimeTotal = (float) collect($modes)->sum('all_time_total');
+        $allTimeCount = (int) collect($modes)->sum('all_time_count');
+
+        return [
+            'period' => $range['period'],
+            'period_label' => $range['label'],
+            'start_date' => $range['start_date'],
+            'end_date' => $range['end_date'],
+            'default_mode' => $defaultMode,
+            'total' => $periodTotal,
+            'count' => $periodCount,
+            'all_time_total' => $allTimeTotal,
+            'all_time_count' => $allTimeCount,
+            'modes' => $modes,
+        ];
     }
 
     private function buildPrintShopReports(Carbon $now, bool $isAdmin, array $accountBalances): array
